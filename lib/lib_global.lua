@@ -23,20 +23,6 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-------
-
-Written using Microsoft Notepad.
-IDE's are for children.
-
-How to notepad like a pro:
-ctrl+f = find
-ctrl+h = find & replace
-ctrl+g = show/jump to line (turn off wordwrap n00b)
-
-Status bar wastes screen space, don't use it.
-
-Use https://tools.stefankueng.com/grepWin.html to mass search, find and replace many files in bulk.
-
 ]]---------------------------------------
 
 util=require("util")
@@ -46,7 +32,6 @@ function isstring(v) return type(v)=="string" end
 function isnumber(v) return type(v)=="number" end
 
 function isvalid(v) return v and v.valid end
-
 
 function new(x,a,b,c,d,e,f,g) local t,v=setmetatable({},x),rawget(x,"__init") if(v)then v(t,a,b,c,d,e,f,g) end return t end
 
@@ -87,8 +72,6 @@ function math.sign(v) return v>0 and 1 or (v<0 and -1 or 0) end
 function math.signx(v) return v>=0 and 1 or (v<0 and -1 or 0) end
 function math.wrap(a,b) local lg=1 local dif=a-b if(math.abs(dif)>lg/2)then return (lg-math.abs(dif))*(dif>0 and 1 or -1) else return dif end end
 math.uint32=4294967295
-
-
 
 string.energy_chars={{10^3,"k"},{10^6,"M"},{10^9,"G"},{10^12,"T"},{10^15,"P"},{10^18,"E"},{10^21,"Z"},{10^24,"Y"}}
 function string.energy_to_string(e,f)
@@ -178,7 +161,6 @@ function vector.oval(p,z,curve) local t,xz,yz={},math.round(z.x/2),math.round(z.
 	if( (x^2)/(xz^2)+(y^2)/(yz^2) <1 )then table.insert(t,vector(vector.getx(p)+x,vector.gety(p)+y)) end
 end end return t end
 
-
 function vector.LayTiles(tex,f,area) local t={} for x=area[1].x,area[2].x do for y=area[1].y,area[2].y do table.insert(t,{name=tex,position={x,y}}) end end f.set_tiles(t) return t end
 vector.LaySquare=vector.LayTiles --alias
 
@@ -204,17 +186,13 @@ vector.clean=vector.clear --alias
 vector.cleanplayers=vector.clearplayers --alias
 vector.cleanFiltered=vector.clearFiltered --alias
 
-
 function vector.GridPos(pos,g) g=g or 0.5 return vector.round(vector(pos)/g) end
 function vector.GridSnap(pos,g) g=g or 0.5 return vector.raw(vector(pos)*g) end -- *g+0.5
 function vector.Snap(pos,g) g=g or 0.5 local x=vector.GridPos(pos,g) return vector.GridSnap(x) end
 function vector.SnapAngle(pos,ang) local vx=vector.length(pos) local rad=math.rad(math.deg(math.atan2(pos.x,pos.y))+ang) return vector(vx*(math.sin(rad)),vx*(math.cos(rad)) ) end
 function vector.SnapOrientation(pos,ang) return vector.SnapAngle(pos,ang*360) end
 
-
 function vector.playsound(pth,f,x) for k,v in pairs(game.connected_players)do if(v.surface.name==f)then v.play_sound{path=pth,position=x} end end end
-
-
 
 --[[ Compass ]]--
 
@@ -236,7 +214,6 @@ vector.compassall={} for k,v in pairs(math.compass)do vector.compassall[k]=vecto
 vector.compassopp={} for k,v in pairs(string.compassopp)do vector.compassopp[k]=vector(math.compass[v]) end
 string.compassdef={north=defines.direction.north,east=defines.direction.east,south=defines.direction.south,west=defines.direction.west}
 
-
 string.railcompass={["diagonal_left_bottom"]="sw",["diagonal_left_top"]="nw",["diagonal_right_bottom"]="se",["diagonal_right_top"]="ne",["vertical"]="east",["horizontal"]="south"}
 string.railcompassopp={["diagonal_left_bottom"]="diagonal_right_top",["diagonal_left_top"]="diagonal_right_bottom",["diagonal_right_bottom"]="diagonal_left_top",
 	["diagonal_right_top"]="diagonal_left_bottom",["vertical"]="vertical",["horizontal"]="horizontal"}
@@ -244,11 +221,7 @@ string.railcompassopp={["diagonal_left_bottom"]="diagonal_right_top",["diagonal_
 string.opposite_loader={["input"]="output",["output"]="input"}
 function math.opposite_dir(d) return (d+4)%8 end
 
-
-
 --[[ rgb meta ]]--
 
 function rgb(r,g,b,a) a=a or 255 return {r=r/255,g=g/255,b=b/255,a=a/255} end
-
-
 

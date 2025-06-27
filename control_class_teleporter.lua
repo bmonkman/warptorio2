@@ -25,7 +25,6 @@ function warptorio.GetPlatformResearch(nm) return warptorio.GetPlatformResearche
 
 warptorio.ResearchEffects={}
 
-
 function warptorio.ResearchEffects.retile(floors)
 	for k,v in pairs(floors)do warptorio.ConstructFloor(v,true) end
 end
@@ -35,7 +34,7 @@ end
 function warptorio.ResearchEffects.unlock_teleporters(tpt) if(not istable(tpt))then tpt={tpt} end
 	for i,nm in pairs(tpt)do
 		local tpx=warptorio.platform.teleporters[nm]
-		local gps=global.Teleporters[nm]
+		local gps=storage.Teleporters[nm]
 		if(not gps)then
 			--game.print("New teleporter: " .. tostring(nm))
 			gps=new(warptorio.TeleporterMeta,tpx)
@@ -46,7 +45,7 @@ end
 function warptorio.ResearchEffects.unlock_rails(tpt) if(not istable(tpt))then tpt={tpt} end
 	for i,nm in pairs(tpt)do
 		local tpx=warptorio.platform.rails[nm]
-		local gps=global.Rails[nm]
+		local gps=storage.Rails[nm]
 		if(not gps)then
 			--game.print("New Rails: " .. tostring(nm))
 			gps=new(warptorio.RailMeta,tpx)
@@ -58,7 +57,7 @@ end
 function warptorio.ResearchEffects.harvesters(hvt)
 	for i,nm in pairs(hvt)do
 		local tpx=warptorio.platform.harvesters[nm]
-		local gps=global.Harvesters[nm]
+		local gps=storage.Harvesters[nm]
 		if(not gps)then
 			gps=new(warptorio.HarvesterMeta,tpx)
 		end
@@ -67,36 +66,36 @@ function warptorio.ResearchEffects.harvesters(hvt)
 end
 function warptorio.ResearchEffects.upgrade_energy(tgt)
 	if(tgt==true)then
-		for k,v in pairs(global.Teleporters)do v:CheckTeleporterPairs(true) end
-		for k,v in pairs(global.Harvesters)do v:CheckTeleporterPairs(true) end
+		for k,v in pairs(storage.Teleporters)do v:CheckTeleporterPairs(true) end
+		for k,v in pairs(storage.Harvesters)do v:CheckTeleporterPairs(true) end
 	else
-		for k,v in pairs(tgt)do if(global.Teleporters[v])then global.Teleporters[v]:CheckTeleporterPairs(true) end end
+		for k,v in pairs(tgt)do if(storage.Teleporters[v])then storage.Teleporters[v]:CheckTeleporterPairs(true) end end
 	end
 end
 function warptorio.ResearchEffects.upgrade_logistics(tgt)
 	if(tgt==true)then
-		for k,v in pairs(global.Teleporters)do v:CheckTeleporterPairs(true) end
-		for k,v in pairs(global.Harvesters)do v:CheckTeleporterPairs(true) end
-		for k,v in pairs(global.Rails)do v:DoMakes() end
+		for k,v in pairs(storage.Teleporters)do v:CheckTeleporterPairs(true) end
+		for k,v in pairs(storage.Harvesters)do v:CheckTeleporterPairs(true) end
+		for k,v in pairs(storage.Rails)do v:DoMakes() end
 	else
-		for k,v in pairs(tgt)do if(global.Teleporters[v])then global.Teleporters[v]:CheckTeleporterPairs(true) end end
+		for k,v in pairs(tgt)do if(storage.Teleporters[v])then storage.Teleporters[v]:CheckTeleporterPairs(true) end end
 	end
 end
 function warptorio.ResearchEffects.do_combinators()
-	for k,v in pairs(global.Harvesters)do v:CheckCombo(true) end
+	for k,v in pairs(storage.Harvesters)do v:CheckCombo(true) end
 end
 function warptorio.ResearchEffects.special(spt)
-	for k,v in pairs(spt)do warptorio.CheckPlatformSpecials(global.floor[v]) end
+	for k,v in pairs(spt)do warptorio.CheckPlatformSpecials(storage.floor[v]) end
 end
 function warptorio.ResearchEffects.reactor(b,lv)
-	local m=global.floor.main players.playsound("warp_in",m.host)
+	local m=storage.floor.main players.playsound("warp_in",m.host)
 	for i=1,3,1 do for x,ply in pairs(game.players)do ply.print{"warptorio_lore."..lv .."_"..i} end end
 
-	if(lv<6)then global.warp_auto_time=global.warp_auto_time+60*10 end
+	if(lv<6)then storage.warp_auto_time=storage.warp_auto_time+60*10 end
 
 	if(lv>=8)then warptorio.ResetHUD() end
 
-	--warptorio.CheckPlatformSpecials(global.floor.main)
+	--warptorio.CheckPlatformSpecials(storage.floor.main)
 end
 function warptorio.ResearchEffects.ability(tgt)
 	warptorio.ResetHUD()
@@ -107,7 +106,6 @@ end
 function warptorio.ResearchEffects.unlock_toolbar()
 	warptorio.ResetHUD()
 end
-
 
 function warptorio.DoResearchEffects(fx,lv)
 	for k,v in pairs(fx)do
@@ -134,9 +132,7 @@ function warptorio.ResearchFinished(ev)
 	warptorio.ConstructHazards()
 end
 
-
 events.on_event(defines.events.on_research_finished,warptorio.ResearchFinished)
-
 
 local platform=warptorio.platform
 
@@ -158,7 +154,7 @@ function TELL.__init(self,tbl,bHarvester)
 	self.loaderFilter=self.loaderFilter or {{},{}}
 	self.sprites=self.sprites or {{},{}}
 	self.sprite_arrows=self.sprite_arrows or {nil,nil}
-	if(not bHarvester)then global.Teleporters[self.key]=self end
+	if(not bHarvester and storage)then storage.Teleporters[self.key]=self end
 end
 function TELL:Data() return warptorio.platform.teleporters[self.key] end
 
@@ -167,8 +163,18 @@ function TELL:ValidB() return isvalid(self.points[2].ent) end
 
 function TELL:ConnectCircuit() local p=self.points
 	if(self:ValidA() and self:ValidB())then
-		p[1].ent.connect_neighbour({target_entity=p[2].ent,wire=defines.wire_type.red})
-		p[1].ent.connect_neighbour({target_entity=p[2].ent,wire=defines.wire_type.green})
+		-- Factorio 2.0: Use new wire connector API
+		local source_red = p[1].ent.get_wire_connector(defines.wire_connector_id.circuit_red, true)
+		local source_green = p[1].ent.get_wire_connector(defines.wire_connector_id.circuit_green, true)
+		local target_red = p[2].ent.get_wire_connector(defines.wire_connector_id.circuit_red, true)
+		local target_green = p[2].ent.get_wire_connector(defines.wire_connector_id.circuit_green, true)
+		
+		if source_red and target_red then
+			source_red.connect_to(target_red)
+		end
+		if source_green and target_green then
+			source_green.connect_to(target_green)
+		end
 	end
 end
 
@@ -181,18 +187,16 @@ function TELL:CheckTeleporterPairs(bSound) -- Call updates and stuff. Automatica
 	if(tps.circuit)then self:ConnectCircuit() end
 end
 
-
-
 --[[ Teleporter Logistics & Spawning Stuff ]]--
-
 
 function TELL:DestroyPointTeleporter(i,rd)
 	local e=self.points[i].ent if(isvalid(e))then self.points[i].energy=e.energy entity.destroy(e,rd) end
 	self:DestroyPointSprites(i)
 end
 function TELL:DestroyPointSprites(i)
-	if(self.sprites and self.sprites[i])then for k,v in pairs(self.sprites[i])do if(rendering.is_valid(v))then rendering.destroy(v) self.sprites[i][k]=nil end end end
-	if(self.sprite_arrows and self.sprite_arrows[i])then if(rendering.is_valid(self.sprite_arrows[i]))then rendering.destroy(self.sprite_arrows[i]) self.sprite_arrows[i]=nil end end
+	-- Factorio 2.0: rendering objects now have .valid property instead of rendering.is_valid()
+	if(self.sprites and self.sprites[i])then for k,v in pairs(self.sprites[i])do if(v and v.valid)then v:destroy() self.sprites[i][k]=nil end end end
+	if(self.sprite_arrows and self.sprite_arrows[i])then if(self.sprite_arrows[i] and self.sprite_arrows[i].valid)then self.sprite_arrows[i]:destroy() self.sprite_arrows[i]=nil end end
 end
 function TELL:CheckPointSprites(i)
 	local tps=self:Data() local t=tps.pair[i]
@@ -204,7 +208,7 @@ end
 
 function TELL:MakePointTeleporter(tps,i,t,pos)
 	local p=self.points[i]
-	local f=global.floor[t.floor].host
+	local f=storage.floor[t.floor].host
 
 	local epos
 	if(t.prototype)then
@@ -219,7 +223,7 @@ function TELL:MakePointTeleporter(tps,i,t,pos)
 		if(not isvalid(e))then
 			local vepos=epos or (pos or t.position)
 			if(not vepos)then return end
-			local vpos=((t.gate and not epos) and f.find_non_colliding_position(vproto,vepos,0,1,1) or vepos)
+			local vpos=((t.gate and not epos) and f.find_non_colliding_position(vproto,vepos,0,1,true) or vepos)
 			--error(serpent.line(vpos))
 			local varea
 			if(not t.gate)then varea=vector.square(vpos+vector(0.5,0.5),vector(2,2)) vector.clean(f,varea) end
@@ -236,14 +240,14 @@ function TELL:MakePointTeleporter(tps,i,t,pos)
 	local ce=cache.force_entity(p.ent,"Teleporters",self.key,"points",i)
 end
 
-
 warptorio.arrowSprite={sprite="utility/medium_gui_arrow",target_offset={0.75,-0.75},x_scale=0.4,y_scale=0.4}
 
 function TELL:MakePointArrow(tps,i,arrow)
 	local spid=self.sprite_arrows[i]
-	if(spid and rendering.is_valid(spid))then return end
+	-- Factorio 2.0: rendering objects now have .valid property instead of rendering.is_valid()
+	if(spid and spid.valid)then return end
 	local tp=self.points[i].ent
-	local t=table.deepcopy(warptorio.arrowSprite)
+	local t=util.table.deepcopy(warptorio.arrowSprite)
 	t.surface=tp.surface
 	t.target=tp
 	t.only_in_alt_mode=true
@@ -255,15 +259,15 @@ end
 function TELL:MakePointSprites(tps,i,sprites)
 	for k,v in pairs(sprites)do
 		local spid=self.sprites[i][k]
-		if(not (spid and rendering.is_valid(spid)))then
+		-- Factorio 2.0: rendering objects now have .valid property instead of rendering.is_valid()
+		if(not (spid and spid.valid))then
 			local tp=self.points[i].ent
-			local t=table.deepcopy(v)
+			local t=util.table.deepcopy(v)
 			t.surface=tp.surface t.target=tp t.only_in_alt_mode=true t.render_layer="higher-object-under"
 			self.sprites[i][k]=rendering.draw_sprite(t)
 		end
 	end
 end
-
 
 function TELL:GetLoaderDirection() local tps=self:Data()
 	if(tps.dirsetting)then return warptorio.setting(tps.dirsetting) end
@@ -271,7 +275,7 @@ function TELL:GetLoaderDirection() local tps=self:Data()
 end
 
 function TELL:DestroyPointLogistics(o)
-	if(self.chests)then for k,v in pairs(self.chests[o])do self.chestcontents[o][k]=v.get_inventory(defines.inventory.chest).get_contents() entity.destroy(v) self.chests[o][k]=nil end end
+	if(self.chests)then for k,v in pairs(self.chests[o])do self.chestcontents[o][k]=entity.get_contents_dict(v.get_inventory(defines.inventory.chest)) entity.destroy(v) self.chests[o][k]=nil end end
 	for k,v in pairs(self.loaders[o])do if(v and isvalid(v))then
 		self.loaderFilter[o][k]={} for i=1,v.filter_slot_count,1 do self.loaderFilter[o][k][i]=v.get_filter(i) end entity.destroy(v)
 	end self.loaders[o][k]=nil end
@@ -291,9 +295,6 @@ function TELL:UpgradeChests() for i=1,6,1 do self:SwapLoaderChests(i) end end
 function TELL:GetTeleporterSize() local d=self:Data() return warptorio.GetTeleporterSize(d.logs,d.dualloader,d.triloader) end
 function TELL:GetLogisticsArea(o) return vector.square(o or self:Data().position,self:GetTeleporterSize()) end
 
-
-
-
 function TELL:MakePointLoader(tps,i,id,ido,pos,f,belt,lddir,chesty,belty,vexdir)
 	local offld=tps.pair[i].prototype and 1 or 0
 
@@ -305,15 +306,21 @@ function TELL:MakePointLoader(tps,i,id,ido,pos,f,belt,lddir,chesty,belty,vexdir)
 		vector.clean(f,varea)
 		v=entity.protect(entity.create(f,belt,vpos,lddir),false,false)
 		vector.cleanplayers(f,varea)
-		v.loader_type=self.dir[i][id]
+		
+		if v then
+			-- Fix loader_type assignment to match harvester fix
+			local dir_type = self.dir[i][id]
+			v.loader_type = (dir_type == "input") and "output" or "input"
+		end
+		
 		self.loaders[i][id]=v
-		local inv=self.loaderFilter[i][id] if(inv)then for invx,invy in pairs(inv)do v.set_filter(invx,invy) end end
+		local inv=self.loaderFilter[i][id] if(inv)then for invx,invy in pairs(inv)do if v then v.set_filter(invx,invy) end end end
 	end
 	cache.force_entity(v,"Teleporters",self.key,"loaders",i,id)
 
 	local v=self.chests[i][id]
 	local chest=warptorio.GetChest(self.dir[i][id])
-	if(isvalid(v) and v.name~=chest)then self.chestcontents[i][id]=v.get_inventory(defines.inventory.chest).get_contents() v.destroy{raise_destroy=true} end
+	if(isvalid(v) and v.name~=chest)then self.chestcontents[i][id]=entity.get_contents_dict(v.get_inventory(defines.inventory.chest)) v.destroy{raise_destroy=true} end
 	if(not isvalid(v))then
 		local vpos=vector(pos)+vector((offld+ido)*vexdir,chesty)
 		local varea=vector.square(vpos,vector(0.5,0.5))
@@ -326,7 +333,6 @@ function TELL:MakePointLoader(tps,i,id,ido,pos,f,belt,lddir,chesty,belty,vexdir)
 		--if(v.type=="logistic-container")then entity.ChestRequestMode(r) end 
 	end
 	cache.get_raise_type("types",v.type,v,"Teleporters",self.key,"chests",i,id)
-
 
 end
 function TELL:MakePointLoaders(tps,i,id,pos,f,belt,lddir,chesty,belty)
@@ -361,10 +367,19 @@ function TELL:CheckPointLogistics(i,vxpos)
 	local belt=warptorio.GetBelt()
 	local pos=vxpos or t.position+vector(0.5,0.5)
 	if(t.gate and not vxpos)then if(not isvalid(self.points[i].ent))then return end pos=vector(self.points[i].ent.position) end
-	local f=global.floor[t.floor].host
+	local f=storage.floor[t.floor].host
 	local offld=tps.pair[i].prototype and 1 or 0
 	local lddir,chesty,belty
-	if(self:GetLoaderDirection()=="up")then lddir=defines.direction.north chesty=-1 belty=0 else lddir=defines.direction.south chesty=1 belty=-1 end
+	local loader_dir = self:GetLoaderDirection()
+	if(loader_dir=="up")then 
+		lddir=defines.direction.south 
+		chesty=-1 
+		belty=0 
+	else 
+		lddir=defines.direction.north 
+		chesty=1 
+		belty=-1 
+	end
 	local ldl=0
 	local lvLogs=research.level("warptorio-logistics")
 	if(tps.logs and lvLogs>0)then ldl=ldl+1 end
@@ -374,8 +389,10 @@ function TELL:CheckPointLogistics(i,vxpos)
 	if(t.gate)then -- check if placement area is clear
 		local vsize=offld+ldl+(tps.dopipes and 1 or 0)
 		local varea=vector.square(pos,vector(vsize*2,3))
-		if(f.count_entities_filtered{area=varea,collision_mask={"object-layer"}} >1)then
-			f.create_entity{name="flying-text", position=pos, text="Logistics blocked - Needs more space", color={r=1,g=0.5,b=0.5}}
+		-- Factorio 2.0: collision_mask parameter may need adjustment
+		local entity_count = f.count_entities_filtered{area=varea}
+		if(entity_count > 1)then
+			rendering.draw_text { text = "Logistics blocked - Needs more space", target = pos, surface = f, color = {r=1,g=0.5,b=0.5}, time_to_live=200}
 			f.play_sound{path="utility/cannot_build",position=pos}
 			--game.print("Planet Teleporter Gate Logistics were blocked by nearby obstructions")
 			can=false
@@ -391,7 +408,7 @@ function TELL:CheckPointLogistics(i,vxpos)
 end
 
 --[[
-function events.on_tick("logistics_teleporters",function(ev) for k,v in pairs(global.Teleporters)do v:TickLogistics() end end end)
+function events.on_tick("logistics_teleporters",function(ev) for k,v in pairs(storage.Teleporters)do v:TickLogistics() end end end)
 
 function TELL:TickLogistics() 
 	for k,v in pairs(self.chests[1])do if(isvalid(self.chests[2][k]))then

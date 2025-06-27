@@ -7,7 +7,7 @@ function TRAIL.__init(self,tbl)
 	self.loaders={{},{},{},{}}
 	self.chestcontents={}
 	self.dir="output"
-	global.Rails[self.key]=self
+	storage.Rails[self.key]=self
 end
 
 function TRAIL:Data() return warptorio.platform.rails[self.key] end
@@ -23,10 +23,10 @@ end
 function TRAIL:MakeChests()
 	local ccls=warptorio.GetChest(self.dir)
 	local tps=self:Data()
-	local f=global.floor[tps.floor].host
+	local f=storage.floor[tps.floor].host
 	for i,px in pairs(vector.compasscorn)do
 		local v=self.chests[1][i]
-		if(isvalid(v) and v.name~=ccls)then self.chestcontents[i]=v.get_inventory(defines.inventory.chest).get_contents() v.destroy{raise_destroy=true} end
+		if(isvalid(v) and v.name~=ccls)then self.chestcontents[i]=entity.get_contents_dict(v.get_inventory(defines.inventory.chest)) v.destroy{raise_destroy=true} end
 		if(not isvalid(v))then
 			local vpos=tps.chestpos+px*0.5
 			local varea=vector.square(vpos,vector(0.5,0.5))
@@ -40,12 +40,18 @@ function TRAIL:MakeChests()
 	end
 end
 
-function TRAIL:Rotate() self:MakeChests() for i,tbl in pairs(self.loaders)do for k,v in pairs(tbl)do v.loader_type=self.dir end end end
-
+function TRAIL:Rotate() 
+	self:MakeChests() 
+	for i,tbl in pairs(self.loaders)do 
+		for k,v in pairs(tbl)do 
+			v.loader_type = self.dir
+		end 
+	end 
+end
 
 function TRAIL:MakeLoaders()
 	local tps=self:Data()
-	local f=global.floor[tps.floor].host
+	local f=storage.floor[tps.floor].host
 	local bcls=warptorio.GetBelt(self.dir)
 	for i,b in pairs(tps.logs)do if(b)then
 		local cd=vector.compass[string.compass[i]]*2
@@ -59,7 +65,9 @@ function TRAIL:MakeLoaders()
 			local varea=vector.square(vpos,vector((i==1 or i==3) and 0.5 or 1,(i==1 or i==3) and 1 or 0.5))
 			vector.clean(f,varea)
 			v=entity.protect(entity.create(f,bcls,vpos,vang),false,false)
-			v.loader_type=self.dir
+			
+			v.loader_type = self.dir
+			
 			self.loaders[i][x]=v
 		end
 		cache.force_entity(v,"Rails",self.key,"loaders",i,x)
@@ -67,11 +75,9 @@ function TRAIL:MakeLoaders()
 	end end
 end
 
-
 function TRAIL:DoMakes() self:MakeRails() self:MakeChests() self:MakeLoaders() end
 
 -- Warp Rail Logistics
-
 
 function TRAIL:SplitItem(u,n) local c=n local cx=0 local cinv={} local ui={name=k,count=n}
 	for k,v in pairs(self.chests[1])do local iv=v.get_inventory(defines.inventory.chest) if(iv.can_insert(u))then cinv[k]=iv end end local tcn=table_size(cinv)
@@ -80,33 +86,31 @@ function TRAIL:SplitItem(u,n) local c=n local cx=0 local cinv={} local ui={name=
 end
 
 function TRAIL:UnloadLogistics(e) for _,r in pairs(e)do
-	local inv=r.get_inventory(defines.inventory.cargo_wagon) for k,v in pairs(inv.get_contents())do local ct=self:SplitItem(k,v) if(ct>0)then inv.remove({name=k,count=ct}) end end
+	local inv=r.get_inventory(defines.inventory.cargo_wagon) for k,v in pairs(entity.get_contents_dict(inv))do local ct=self:SplitItem(k,v) if(ct>0)then inv.remove({name=k,count=ct}) end end
 end end
 
 function TRAIL:LoadLogistics(e)
 	local inv={} for k,v in pairs(self.chests[1])do inv[k]=v.get_inventory(defines.inventory.chest) end
-	local ct={} for k,v in pairs(inv)do for a,b in pairs(v.get_contents())do ct[a]=(ct[a] or 0)+b end v.clear() end
+	local ct={} for k,v in pairs(inv)do for a,b in pairs(entity.get_contents_dict(v))do ct[a]=(ct[a] or 0)+b end v.clear() end
 	for _,r in pairs(e)do local tr=r.get_inventory(defines.inventory.cargo_wagon) for k,v in pairs(ct)do ct[k]=v-(tr.insert{name=k,count=v}) end end
 	local ci for a,b in pairs(ct)do local g=b ci=#inv
 		for k,v in pairs(inv)do if(ci>0)then local gci=math.ceil(g/ci) if(gci>0)then local w=v.insert{name=a,count=math.ceil(g/ci)} ci=ci-1 g=g-w end end end
 	end
 end
 function TRAIL:BalanceChests() local inv={} for k,v in pairs(self.chests[1])do if(isvalid(v))then inv[k]=v.get_inventory(defines.inventory.chest) end end if(table_size(inv)>0)then
-	local ct={} for k,v in pairs(inv)do for a,b in pairs(v.get_contents())do ct[a]=(ct[a] or 0)+b end v.clear() end
+	local ct={} for k,v in pairs(inv)do for a,b in pairs(entity.get_contents_dict(v))do ct[a]=(ct[a] or 0)+b end v.clear() end
 	local ci for a,b in pairs(ct)do local g=b ci=table_size(inv) for k,v in pairs(inv)do
 		local gci=math.ceil(g/ci) if(gci>0)then local w=v.insert{name=a,count=math.ceil(g/ci)} ci=ci-1 g=g-w end
 	end end
 end end
 
-function TRAIL:TickLogistics() local f=global.floor.main.host if(not f.valid)then return end local c=self:Data().railpos
+function TRAIL:TickLogistics() local f=storage.floor.main.host if(not f.valid)then return end local c=self:Data().railpos
 	local e=f.find_entities_filtered{name="cargo-wagon",area={{c.x-1,c.y-1},{c.x+1,c.y+1}} }
 	if(table_size(e)>0)then if(self.dir=="output")then self:UnloadLogistics(e) self:BalanceChests() else self:LoadLogistics(e) end else self:BalanceChests() end
 end
 
-
-events.on_tick(3,0,"TickRails",function(ev) for k,v in pairs(global.Rails)do v:TickLogistics() end end)
+events.on_tick(3,0,"TickRails",function(ev) for k,v in pairs(storage.Rails)do v:TickLogistics() end end)
 --[[ old stuff
-
 
 -- Warp Rail Constructor
 
@@ -122,8 +126,5 @@ end
 
 function warptorio.BuildRails() warptorio.BuildRailCorner("nw") warptorio.BuildRailCorner("sw") warptorio.BuildRailCorner("ne") warptorio.BuildRailCorner("se") end --for k,v in pairs(warptorio.railCorn)do warptorio.BuildRailCorner(k) end end
 
-
-
 ]]
-
 

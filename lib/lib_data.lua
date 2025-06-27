@@ -23,32 +23,13 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-------
-
-Written using Microsoft Notepad.
-IDE's are for children.
-
-How to notepad like a pro:
-ctrl+f = find
-ctrl+h = find & replace
-ctrl+g = show/jump to line (turn off wordwrap n00b)
-
-Status bar wastes screen space, don't use it.
-
-Use https://tools.stefankueng.com/grepWin.html to mass search, find and replace many files in bulk.
-
 ]]---------------------------------------
 
 --[[ Prototype/data stage libraries ]]--
 
 local proto={}
 
-
-
-
 --[[ Prototyping Data Stuff ]]--
-
-
 
 -- All the different things an item can be
 -- See also data.raw["item-subgroup"][k].name
@@ -74,8 +55,7 @@ proto.PlacementGroups={
 "simple-entity","simple-entity-with-force","simple-entity-with-owner","solar-panel","splitter","storage-tank",
 "train-stop","transport-belt",
 "underground-belt",
-"wall",
-}
+"wall"}
 
 function proto.Recache() proto._items=nil proto._placeables=nil proto._labpacks=nil proto._used=nil proto._furnacecat=nil end
 
@@ -132,15 +112,6 @@ end
 
 proto.IsTechnologyEnabled=proto.IsEnabled -- alias
 
-function proto.IsHidden(v)
-	if(tostring(v.hidden)=="true")then return true end
-	if(v.normal and tostring(v.normal.hidden)=="true")then return true end
-	if(v.expensive and tostring(v.expensive.hidden)=="true")then return true end
-	return false
-end
-
-
-
 proto.Difficulties={[0]="standard",[1]="normal",[2]="expensive"}
 function proto.Normal(t) local v=t if(t.normal)then v=t.normal elseif(t.expensive)then v=t.expensive end return v end
 function proto.FetchDifficultyLayer(tx,seek)
@@ -195,23 +166,21 @@ function proto.GetRawTrees() return proto.GetRawAutoplacers(data.raw.tree) end
 function proto.GetRawRocks() return proto.GetRawAutoplacers(data.raw["simple-entity"],function(v) return v.count_as_rock_for_filtered_deconstruction end) end
 function proto.GetRaw() local t={} for k,v in pairs({proto.GetRawResources(),proto.GetRawTrees(),proto.GetRawRocks()})do for i,e in pairs(v)do table.insertExclusive(t,e) end end return t end
 
-
 function proto.Copy(a,b,x) local t=table.deepcopy(data.raw[a][b]) if(x)then table.deepmerge(t,x) end return t end
 
 function proto.ExtendBlankEntityItems(ent)
 	local rcp=proto.Copy("recipe","nuclear-reactor")
-	rcp.enabled=false rcp.name=ent.name rcp.ingredients={{"steel-plate",1}} rcp.result=ent.name
+	rcp.enabled=false rcp.name=ent.name rcp.ingredients={{type="item", name="steel-plate", amount=1}} rcp.result=ent.name
 
 	local item=proto.Copy("item","nuclear-reactor")
 	item.name=ent.name item.place_result=ent.name
 	data:extend{rcp,item}
 end
 
-
 proto.VanillaPacks={red="automation-science-pack",green="logistic-science-pack",blue="chemical-science-pack",black="military-science-pack",
 	purple="production-science-pack",yellow="utility-science-pack",white="space-science-pack"}
 
-function proto.SciencePacks(x) local t={} for k,v in pairs(x)do table.insert(t,{proto.VanillaPacks[k],v}) end return t end
+function proto.SciencePacks(x) local t={} for k,v in pairs(x)do table.insert(t,{type="item", name=proto.VanillaPacks[k], amount=v}) end return t end
 function proto.ExtendTech(t,d,s) local x=table.merge(t,d) if(s)then x.unit.ingredients=proto.SciencePacks(s) end data:extend{x} return x end
 
 function proto.Icons(p) if(p.icons)then return p.icons end if(p.icon)then return {{icon=p.icon,icon_size=p.icon_size}} end end

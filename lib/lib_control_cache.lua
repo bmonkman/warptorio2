@@ -23,29 +23,14 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-------
-
-Written using Microsoft Notepad.
-IDE's are for children.
-
-How to notepad like a pro:
-ctrl+f = find
-ctrl+h = find & replace
-ctrl+g = show/jump to line (turn off wordwrap n00b)
-
-Status bar wastes screen space, don't use it.
-
-Use https://tools.stefankueng.com/grepWin.html to mass search, find and replace many files in bulk.
-
 ]]---------------------------------------
-
 
 --[[ Simple Cache & Events Manager ]]--
 --[[ Usage
 cache.ent("assembling-machine-1",{built=function(ent) dostuff() end})
 cache.type("assembling-machine",{built=function(ent_with_type) dostuff() end})
 
-Also has global table manager for arbitrary data on stuff.
+Also has storage table manager for arbitrary data on stuff.
 Create/destroy manually though, still easier than writing a new handler every time.
 
 cache.vgui("hud_frame",{ click=function(elm,ev)
@@ -64,17 +49,14 @@ cache.call_menu("func_name",menu,data,...)
 ...
 cache.destroy_menu(menu) -- force close menu
 
-
 local vtbl=cache.raise_entity(entity)
 ...
 cache.destroy_entity(vtbl)
 -- etc etc
 
-
 ]]--
 
 local cache={}
-
 
 -- cache classes
 cache.surfaces={}
@@ -99,8 +81,7 @@ cache.primaries={
 	menu="menus",
 	player="players",force="forces",
 	surface="surfaces",spattern="spatterns",
-	unit="units",utype="utypes",
-}
+	unit="units",utype="utypes"}
 -- grouped class types for event filters
 cache.classes={
 	ents={name="ents",type="types",ptrn="patterns"},
@@ -108,44 +89,53 @@ cache.classes={
 	menus={name="menus"},
 	players={single="players"},
 	forces={name="forces",ptrn="fpatterns"},
-	surfaces={name="surfaces",spattern="spatterns"},
-}
+	surfaces={name="surfaces",spattern="spatterns"}}
 
 for k,v in pairs(cache.primaries)do if(k~="player")then cache[k]=function(name,tbl) cache[v][name]=tbl end end end
 function cache.player(tbl) cache.players=tbl end
 
-
 cache.events={} -- Functions to distribute individual events among the caches in correct orders
 
 function cache.init()
-	global._lib=global._lib or {}
+	storage._lib=storage._lib or {}
 	cache.migrate()
 end
 
 function cache.migrate(ev)
-	if(global._libcache)then global._lib={cache=global._libcache} global._libcache=nil else global._lib=global._lib or {cache={}} end -- global._lib.cache
-	global._lib.cache=global._lib.cache or {}
-	for key,category in pairs(cache.primaries)do -- global._lib[raised_type]
-		global._lib[category]=global._lib[category] or {}
-		global._lib[category.."_idx"]=global._lib[category.."_idx"] or {}
+	if(storage._libcache)then storage._lib={cache=storage._libcache} storage._libcache=nil else storage._lib=storage._lib or {cache={}} end -- storage._lib.cache
+	storage._lib.cache=storage._lib.cache or {}
+	for key,category in pairs(cache.primaries)do -- storage._lib[raised_type]
+		storage._lib[category]=storage._lib[category] or {}
+		storage._lib[category.."_idx"]=storage._lib[category.."_idx"] or {}
 	end
 end
-
 
 function cache.load()
 end
 
  -- helper functions for simple caching
-function cache.insert(n,ent) global._lib.cache[n]=global._lib.cache[n] or {} table.insertExclusive(global._lib.cache[n],ent) end
-function cache.validate(n) global._lib.cache[n]=global._lib.cache[n] or {} for k,v in pairs(global._lib.cache[n])do if(not isvalid(v))then global._lib.cache[n][k]=nil end end end
-function cache.remove(n,ent) global._lib.cache[n]=global._lib.cache[n] or {} table.RemoveByValue(global._lib.cache[n],ent) end
-function cache.get(n) if(isstring(n))then return global._lib.cache[n] or {} end  end
+function cache.insert(n,ent)
+  if not storage._lib then return end
+  storage._lib.cache[n]=storage._lib.cache[n] or {}
+  table.insertExclusive(storage._lib.cache[n],ent)
+end
+function cache.validate(n)
+  if not storage._lib then return end
+  storage._lib.cache[n]=storage._lib.cache[n] or {}
+  for k,v in pairs(storage._lib.cache[n])do if(not isvalid(v))then storage._lib.cache[n][k]=nil end end
+end
+function cache.remove(n,ent)
+  if not storage._lib then return end
+  storage._lib.cache[n]=storage._lib.cache[n] or {}
+  table.RemoveByValue(storage._lib.cache[n],ent)
+end
+function cache.get(n)
+  if not storage._lib then return {} end
+  if(isstring(n))then return storage._lib.cache[n] or {} end
+end
 --function cache.call(n,evn,ev,...) for k,v in pairs(cache.get(n))do ev.entity=v cache.call_ents(evn,ev,...) end end -- Call a simple event on all entities in a cache table.
 function cache.entcall(n,evn,ev,...) for k,v in pairs(cache.get(n))do ev.entity=v cache.call_ents(evn,ev,...) end end -- Call a simple event on all entities in a cache table.
 function cache.surfacecall(n,evn,ev,...) for k,v in pairs(cache.get(n))do ev.entity=v cache.call_surfaces(evn,ev,...) end end -- Call a simple event on all entities in a cache table.
-
-
-
 
 function cache.call_ents(vn,ev,...) local ent=events.entity(ev) if(not isvalid(ent))then return end
 	local tx=cache.types[ent.type=="ghost" and ent.ghost_type or ent.type] if(tx and tx[vn])then tx[vn](ent,ev,...) end if(not isvalid(ent))then return end
@@ -175,18 +165,19 @@ end
 
 function cache.get_index(host,key) return host[key] end
 
--- Raise/destroy stuff to cache into global table. It gives us an internally managed cache table to shove data into e.g. creation/destruction of the base object.
+-- Raise/destroy stuff to cache into storage table. It gives us an internally managed cache table to shove data into e.g. creation/destruction of the base object.
 function cache.raise_type(vtype,name,host,...)
+  if not storage._lib then return end
 	local uid if(isnumber(host))then uid=host else local cx cx,uid=pcall(cache.get_index,host,"index") if(not cx)then cx,uid=pcall(cache.get_index,host,"unit_number") if(not cx)then uid=nil end end end
 	local hdx=uid
-	if(hdx)then local gc=global._lib[vtype.."_idx"][hdx] if(gc and name)then gc=gc[name] end if(gc)then return gc end end -- get existing hosted/index vtype
+	if(hdx)then local gc=storage._lib[vtype.."_idx"][hdx] if(gc and name)then gc=gc[name] end if(gc)then return gc end end -- get existing hosted/index vtype
 	local c=cache[vtype] -- cache["ents"][name]. You can call these manually if you need to for ptrn, surfaces etc.
 	if(not c)then return end if(name)then c=c[name] if(not c)then return end end -- only menus and vguis typically use names.
-	local idx=#global._lib[vtype]+1
-	local t={index=idx,name=name,type=vtype,host=host,hostindex=hdx} global._lib[vtype][idx]=t
+	local idx=#storage._lib[vtype]+1
+	local t={index=idx,name=name,type=vtype,host=host,hostindex=hdx} storage._lib[vtype][idx]=t
 	if(hdx)then
-		if(name)then local gc=global._lib[vtype.."_idx"][hdx] or {} global._lib[vtype.."_idx"][hdx]=gc gc[t.name]=t
-		else global._lib[vtype.."_idx"][hdx]=t
+		if(name)then local gc=storage._lib[vtype.."_idx"][hdx] or {} storage._lib[vtype.."_idx"][hdx]=gc gc[t.name]=t
+		else storage._lib[vtype.."_idx"][hdx]=t
 		end
 	end
 	if(c.raise)then c.raise(t,...) end
@@ -195,13 +186,17 @@ function cache.raise_type(vtype,name,host,...)
 
 	return t
 end
-function cache.destroy_type(obj,...) local vtype=obj.type
+function cache.destroy_type(obj,...) 
+  if not storage._lib then return end
+	local vtype=obj.type
 	local c=cache[vtype] if(not c)then return end if(obj.name)then c=c[obj.name] if(not c)then return end end
 	if(c.unraise)then c.unraise(obj,...) end
-	global._lib[vtype][obj.index]=nil
-	if(obj.hostindex)then global._lib[vtype.."_idx"][obj.hostindex]=nil end
+	storage._lib[vtype][obj.index]=nil
+	if(obj.hostindex)then storage._lib[vtype.."_idx"][obj.hostindex]=nil end
 end
-function cache.get_type(vtype,name,host) local t=global._lib[vtype.."_idx"]
+function cache.get_type(vtype,name,host)
+  if not storage._lib then return end
+	local t=storage._lib[vtype.."_idx"]
 	if(t)then
 		local uid if(isnumber(host))then uid=host else local cx cx,uid=pcall(cache.get_index,host,"index") if(not cx)then cx,uid=pcall(cache.get_index,host,"unit_number") if(not cx)then uid=nil end end end
 		if(uid)then t=t[uid] else t=nil end
@@ -209,11 +204,16 @@ function cache.get_type(vtype,name,host) local t=global._lib[vtype.."_idx"]
 	if(t and name)then t=t[name] end
 	return t
 end
-function cache.get_raise_type(vtype,name,host,...) return cache.get_type(vtype,name,host) or cache.raise_type(vtype,name,host,...) end
-function cache.get_types(vtype) local t=global._lib[vtype] return t end
+function cache.get_raise_type(vtype,name,host,...)
+  if not storage._lib then return end
+	return cache.get_type(vtype,name,host) or cache.raise_type(vtype,name,host,...)
+end
+function cache.get_types(vtype)
+  if not storage._lib then return end
+	local t=storage._lib[vtype] return t
+end
 
 function cache.destroy(obj,...) return cache.destroy_type(obj,...) end -- This just destroys the cache object, not the actual in-game object.
-
 
 function cache.raise_menu(name,ply,...) return cache.raise_type("menus",name,ply,...) end
 function cache.force_menu(name,ply,...) return cache.get_raise_type("menus",name,ply,...) end
@@ -250,8 +250,6 @@ function cache.force_entity(ent,...) return cache.get_raise_type("ents",nil,ent,
 function cache.get_entity(ent) return cache.get_type("ents",nil,ent) end
 cache.destroy_entity=cache.destroy
 
-
-
 function cache.update(ent,vn,...) vn=vn or "update"
 	local tx=cache.types[ent.type] if(tx and tx[vn])then tx[vn](ent,...) end
 	local tx=cache.ents[ent.name] if(tx and tx[vn])then tx[vn](ent,...) end
@@ -268,13 +266,10 @@ function cache.updatemenu(mn,vn,ev,...) for i,ply in pairs(game.players)do
 	end
 end end
 
-
-
 function cache.inject_type(nm,evdata)
 	local funcs=cache.events[nm]
 	local defs=cache.events[nm.."_defs"]
 	local ccls=cache.classes[nm]
-
 
 	local ptrn=false
 	for evtype,vdefs in pairs(defs)do
@@ -288,12 +283,11 @@ function cache.inject_type(nm,evdata)
 			for _,def in pairs(vdefs)do evdata[def]=evdata[def] or {} table.insert(evdata[def],{nm=nm,tpnm=tpnm,evtype=evtype,ghost=cls.ghost,clsptrn=ccls.ptrn,func=funcs[def]}) end
 		end end end
 		if(ccls.single)then local cls=cache[ccls.single] if(cls[evtype])then
-			for _,def in pairs(vdefs)do evdata[def]=evdata[def] or {} table.insert(evdata[def],{nm=nm,tpnm=tpnm,evtype=evtype,ghost=cls.ghost,clssingle=ccls.single,func=funcs[def]}) end
+			for _,def in pairs(vdefs)do evdata[def]=evdata[def] or {} table.insert(evdata[def],{nm=nm,tpnm=nil,evtype=evtype,ghost=cls.ghost,clssingle=ccls.single,func=funcs[def]}) end
 		end end
 	end
 	--if(nm=="players")then error(serpent.block(evdata)) end
 end
-
 
 function cache.inject() -- interface with events
 	local evdata={} for nm in pairs(cache.classes)do cache.inject_type(nm,evdata) end
@@ -366,12 +360,9 @@ on_unit_group_created
 on_unit_removed_from_group
 on_biter_base_built
 
-
 on_market_item_purchased
 
-
 ]]
-
 
 cache.events.forces={}
 function cache.events.forces.on_research_finished(ev) cache.call_force("research_finished",ev) end
@@ -384,8 +375,7 @@ function cache.events.forces.on_chart_tag_removed(ev) cache.call_force("tag_remo
 cache.events.forces_defs={ -- Things that specifically are called with a force. Player stuff can be hooked from players.
 	research_finished={"on_research_finished"},
 	research_started={"on_research_started"},
-	research_reset={"on_technology_effects_reset"},
-}
+	research_reset={"on_technology_effects_reset"}}
 
 cache.events.ents={}
 function cache.events.ents.on_built_entity(ev) cache.call_ents("built",ev) cache.call_ents("create",ev) end
@@ -405,7 +395,6 @@ function cache.events.ents.on_cancelled_upgrade(ev) cache.call_ents("cancel_upgr
 function cache.events.ents.on_marked_for_deconstruction(ev) cache.call_ents("deconstruct",ev) end
 function cache.events.ents.on_marked_for_upgrade(ev) cache.call_ents("upgrade",ev) end
 function cache.events.ents.on_pre_ghost_deconstructed(ev) cache.call_ents("deconstruct_ghost",ev) end
-function cache.events.ents.on_post_entity_died(ev) cache.call_ents("post_died",ev) end
 function cache.events.ents.on_mod_item_opened(ev) cache.call_ents("item_menu",ev) end
 function cache.events.ents.on_entity_damaged(ev) cache.call_ents("damage",ev) end
 function cache.events.ents.on_trigger_created_entity(ev) cache.call_ents("trigger",ev) end
@@ -414,7 +403,6 @@ function cache.events.ents.on_land_mine_armed(ev) cache.call_ents("mine_armed",e
 function cache.events.ents.on_gui_opened(ev) cache.call_ents("gui_opened",ev) end
 function cache.events.ents.on_gui_closed(ev) cache.call_ents("gui_closed",ev) end
 function cache.events.ents.on_pre_robot_exploded_cliff(ev) cache.call_ents("pre_robot_exploded_cliff",ev) end
-function cache.events.ents.on_post_entity_died(ev) cache.call_ents("post_died",ev) end
 function cache.events.ents.on_combat_robot_expired(ev) cache.call_ents("robot_expired",ev) end
 function cache.events.ents.script_raised_revive(ev) cache.call_ents("create",ev) end
 function cache.events.ents.on_entity_renamed(ev) cache.call_ents("rename",ev) end
@@ -450,10 +438,7 @@ cache.events.ents_defs={
 	spawned={"on_entity_spawned"},
 	mine_armed={"on_land_mine_armed"},
 
-	pre_robot_exploded_cliff={"on_pre_robot_exploded_cliff"},
-	post_died={"on_post_entity_died"},
-}
-
+	pre_robot_exploded_cliff={"on_pre_robot_exploded_cliff"}}
 
 cache.events.vgui={}
 function cache.events.vgui.on_gui_opened(ev) cache.call_vgui("open_menu",ev) end
@@ -485,10 +470,7 @@ cache.events.vgui_defs={
 	location_changed={"on_gui_location_changed"},
 	tab_changed={"on_gui_selected_tab_changed"},
 	on_switched={"on_gui_switch_state_changed"},
-	value_changed={"on_gui_value_changed"},
-}
-
-
+	value_changed={"on_gui_value_changed"}}
 
 cache.events.surfaces={}
 function cache.events.surfaces.on_surface_created(ev) cache.call_surface("create",ev) end
@@ -515,8 +497,7 @@ cache.events.surfaces_defs={
 	chunk_deleted={"on_chunk_deleted"},
 	pre_chunk_deleted={"on_pre_chunk_deleted"},
 
-	chart={"on_chunk_charted"},
-}
+	chart={"on_chunk_charted"}}
 
 cache.events.players={}
 function cache.events.players.on_player_toggled_alt_mode(ev) cache.call_player("on_alt",ev) end
@@ -575,7 +556,6 @@ function cache.events.players.on_player_rotated_entity(ev) cache.call_player("on
 function cache.events.players.on_player_trash_inventory_changed(ev) cache.call_player("on_trash_changed",ev) end
 function cache.events.players.on_player_used_capsule(ev) cache.call_player("on_capsule",ev) end
 
-
 cache.events.players_defs={
 
 	on_alt={"on_player_toggled_alt_mode"},
@@ -608,7 +588,6 @@ cache.events.players_defs={
 	on_alt_select_area={"on_player_alt_selected_area"},
 	on_deconstruct_area={"on_player_deconstructed_area"},
 	on_select_area={"on_player_selected_area"},
-
 
 	on_blueprint={"on_player_configured_blueprint"},
 	on_setup_blueprint={"on_player_setup_blueprint"},
@@ -653,9 +632,7 @@ cache.events.players_defs={
 
 	on_trash_changed={"on_player_trash_inventory_changed"},
 
-	on_capsule={"on_player_used_capsule"},
-	
-}
+	on_capsule={"on_player_used_capsule"}}
 cache.events.menus={}
 cache.events.menus_defs={
 }

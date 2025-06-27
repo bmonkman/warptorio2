@@ -12,8 +12,7 @@ data:extend{
       stack_size = 50,
       subgroup = "energy-pipe-distribution",
       type = "item"
-    },]]
-
+    }]]
 
 {
       collision_box = {
@@ -35,15 +34,16 @@ data:extend{
       },
       fluid_box = {
         base_area = 5,
+        volume = 100,
         pipe_connections = {
           {
+            direction = 0,
             position = {
               0,
-              -1
+              -0.289
             }
           }
         },
-
 
         pipe_covers = {
           east = {
@@ -51,30 +51,17 @@ data:extend{
               { tint=rctint,
                 filename = "__base__/graphics/entity/pipe-covers/pipe-cover-east.png",
                 height = 64,
-                hr_version = { tint=rctint,
-                  filename = "__base__/graphics/entity/pipe-covers/hr-pipe-cover-east.png",
-                  height = 128,
-                  priority = "extra-high",
-                  scale = 0.5,
-                  width = 128
-                },
                 priority = "extra-high",
-                width = 64
+                width = 64,
+                scale = 0.5
               },
               {
                 draw_as_shadow = true,
                 filename = "__base__/graphics/entity/pipe-covers/pipe-cover-east-shadow.png",
                 height = 64,
-                hr_version = {
-                  draw_as_shadow = true,
-                  filename = "__base__/graphics/entity/pipe-covers/hr-pipe-cover-east-shadow.png",
-                  height = 128,
-                  priority = "extra-high",
-                  scale = 0.5,
-                  width = 128
-                },
                 priority = "extra-high",
-                width = 64
+                width = 64,
+                scale = 0.5
               }
             }
           },
@@ -82,31 +69,18 @@ data:extend{
             layers = {
               { tint=rctint,
                 filename = "__base__/graphics/entity/pipe-covers/pipe-cover-north.png",
-                height = 64,
-                hr_version = { tint=rctint,
-                  filename = "__base__/graphics/entity/pipe-covers/hr-pipe-cover-north.png",
-                  height = 128,
-                  priority = "extra-high",
-                  scale = 0.5,
-                  width = 128
-                },
+                height = 128,
                 priority = "extra-high",
-                width = 64
+                width = 128,
+                scale = 0.75
               },
               {
                 draw_as_shadow = true,
                 filename = "__base__/graphics/entity/pipe-covers/pipe-cover-north-shadow.png",
-                height = 64,
-                hr_version = {
-                  draw_as_shadow = true,
-                  filename = "__base__/graphics/entity/pipe-covers/hr-pipe-cover-north-shadow.png",
-                  height = 128,
-                  priority = "extra-high",
-                  scale = 0.5,
-                  width = 128
-                },
+                height = 128,
                 priority = "extra-high",
-                width = 64
+                width = 128,
+                scale = 0.75
               }
             }
           },
@@ -115,30 +89,17 @@ data:extend{
               { tint=rctint,
                 filename = "__base__/graphics/entity/pipe-covers/pipe-cover-south.png",
                 height = 64,
-                hr_version = { tint=rctint,
-                  filename = "__base__/graphics/entity/pipe-covers/hr-pipe-cover-south.png",
-                  height = 128,
-                  priority = "extra-high",
-                  scale = 0.5,
-                  width = 128
-                },
                 priority = "extra-high",
-                width = 64
+                width = 64,
+                scale = 0.75
               },
               {
                 draw_as_shadow = true,
                 filename = "__base__/graphics/entity/pipe-covers/pipe-cover-south-shadow.png",
                 height = 64,
-                hr_version = {
-                  draw_as_shadow = true,
-                  filename = "__base__/graphics/entity/pipe-covers/hr-pipe-cover-south-shadow.png",
-                  height = 128,
-                  priority = "extra-high",
-                  scale = 0.5,
-                  width = 128
-                },
                 priority = "extra-high",
-                width = 64
+                width = 64,
+                scale = 0.75
               }
             }
           },
@@ -146,31 +107,18 @@ data:extend{
             layers = {
               { tint=rctint,
                 filename = "__base__/graphics/entity/pipe-covers/pipe-cover-west.png",
-                height = 64,
-                hr_version = { tint=rctint,
-                  filename = "__base__/graphics/entity/pipe-covers/hr-pipe-cover-west.png",
-                  height = 128,
-                  priority = "extra-high",
-                  scale = 0.5,
-                  width = 128
-                },
+                height = 128,
                 priority = "extra-high",
-                width = 64
+                width = 128,
+                scale = 1
               },
               {
                 draw_as_shadow = true,
                 filename = "__base__/graphics/entity/pipe-covers/pipe-cover-west-shadow.png",
-                height = 64,
-                hr_version = {
-                  draw_as_shadow = true,
-                  filename = "__base__/graphics/entity/pipe-covers/hr-pipe-cover-west-shadow.png",
-                  height = 128,
-                  priority = "extra-high",
-                  scale = 0.5,
-                  width = 128
-                },
+                height = 128,
                 priority = "extra-high",
-                width = 64
+                width = 128,
+                scale = 1
               }
             }
           }
@@ -182,61 +130,42 @@ data:extend{
       --[[minable = {
         mining_time = 0.1,
         result = "pipe-to-ground"
-      },]]
+      }]]
 	      order = "a[pipe]-b[pipe-to-ground]",
       name = "warptorio-logistics-pipe",
       pictures = {
+        filename = "__base__/graphics/entity/pipe-to-ground/pipe-to-ground-right.png",
+        width = 128,
+        height = 128,
+        priority = "high",
+        scale = 0.5,
         down = { tint=rctint,
           filename = "__base__/graphics/entity/pipe-to-ground/pipe-to-ground-down.png",
-          height = 64,
-          hr_version = { tint=rtint,
-            filename = "__base__/graphics/entity/pipe-to-ground/hr-pipe-to-ground-down.png",
-            height = 128,
-            priority = "extra-high",
-            scale = 0.5,
-            width = 128
-          },
+          height = 128,
           priority = "high",
-          width = 64
+          width = 128,
+          scale = 0.5
         },
         left = { tint=rctint,
           filename = "__base__/graphics/entity/pipe-to-ground/pipe-to-ground-left.png",
-          height = 64,
-          hr_version = { tint=rtint,
-            filename = "__base__/graphics/entity/pipe-to-ground/hr-pipe-to-ground-left.png",
-            height = 128,
-            priority = "extra-high",
-            scale = 0.5,
-            width = 128
-          },
+          height = 128,
           priority = "high",
-          width = 64
+          width = 128,
+          scale = 0.5
         },
         right = { tint=rctint,
           filename = "__base__/graphics/entity/pipe-to-ground/pipe-to-ground-right.png",
-          height = 64,
-          hr_version = { tint=rtint,
-            filename = "__base__/graphics/entity/pipe-to-ground/hr-pipe-to-ground-right.png",
-            height = 128,
-            priority = "extra-high",
-            scale = 0.5,
-            width = 128
-          },
+          height = 128,
           priority = "high",
-          width = 64
+          width = 128,
+          scale = 0.5
         },
         up = { tint=rctint,
           filename = "__base__/graphics/entity/pipe-to-ground/pipe-to-ground-up.png",
-          height = 64,
-          hr_version = { tint=rtint,
-            filename = "__base__/graphics/entity/pipe-to-ground/hr-pipe-to-ground-up.png",
-            height = 128,
-            priority = "extra-high",
-            scale = 0.5,
-            width = 128
-          },
+          height = 128,
           priority = "high",
-          width = 64
+          width = 128,
+          scale = 0.5
         }
       },
       resistances = {
@@ -260,6 +189,7 @@ data:extend{
         }
       },
       type = "pipe-to-ground",
+      underground_distance = 10,
       vehicle_impact_sound = {
         filename = "__base__/sound/car-metal-impact.ogg",
         volume = 0.65

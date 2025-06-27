@@ -29,12 +29,9 @@ do
   __original_global_values = __deepcopy(_G)
   __original_loaded_packages = __deepcopy(package.loaded)
 end
- 
- 
+
 -- your file, just like you had it previously
- 
- 
- 
+
 -- very end of the file
  
 -- using this too maintain table references.

@@ -4,8 +4,6 @@ local rsc=1.5
 
 data:extend{
 
-
-
 --[[{
       icons = {{tint=rtint,icon="__base__/graphics/icons/substation.png"}},
       icon_size = 32,
@@ -15,8 +13,7 @@ data:extend{
       stack_size = 50,
       subgroup = "energy-pipe-distribution",
       type = "item"
-    },]]
-
+    }]]
 
 {
       collision_box = {
@@ -173,7 +170,7 @@ data:extend{
       --[[minable = {
         mining_time = 0.1,
         result = "warptorio-warpstation"
-      },]]
+      }]]
       order = "a[energy]-d[substation]",
       name = "warptorio-warpstation",
       pictures = {
@@ -182,18 +179,6 @@ data:extend{
             direction_count = 4,
             filename = "__base__/graphics/entity/substation/substation.png",
             height = 136,
-            hr_version = { tint=rtint,
-              direction_count = 4,
-              filename = "__base__/graphics/entity/substation/hr-substation.png",
-              height = 270,
-              priority = "high",
-              scale = 0.5*rsc,
-              shift = {
-                0,
-                -0.96875*rsc
-              },
-              width = 138
-            },
             priority = "high",
             shift = {
               0,
@@ -206,19 +191,6 @@ data:extend{
             draw_as_shadow = true,
             filename = "__base__/graphics/entity/substation/substation-shadow.png",
             height = 52,
-            hr_version = { tint=rtint,
-              direction_count = 4,
-              draw_as_shadow = true,
-              filename = "__base__/graphics/entity/substation/hr-substation-shadow.png",
-              height = 104,
-              priority = "high",
-              scale = 0.5*rsc,
-              shift = {
-                1.9375*rsc,
-                0.3125*rsc
-              },
-              width = 370
-            },
             priority = "high",
             shift = {
               1.9375*rsc,
@@ -266,7 +238,5 @@ data:extend{
         }
       }
     }
-
-
 
 }

@@ -10,15 +10,36 @@ data:extend{
       enabled = false,
       energy_required = 50,
       ingredients = {
-	{"atomic-bomb",1},{"warptorio-warponium-fuel-cell",1},{"warptorio-warponium-fuel",1}
+        {
+          type = "item",
+          name = "atomic-bomb",
+          amount = 1
+        },
+        {
+          type = "item",
+          name = "warptorio-warponium-fuel-cell",
+          amount = 1
+        },
+        {
+          type = "item",
+          name = "warptorio-warponium-fuel",
+          amount = 1
+        }
       },
       name = "warptorio-atomic-bomb",
-      result = "warptorio-atomic-bomb",
+      results = {
+        {
+          type = "item",
+          name = "warptorio-atomic-bomb",
+          amount = 1
+        }
+      },
       type = "recipe"
     },
 
 --["warptorio-atomic-bomb"] -- the ammo item
 {
+      ammo_category = "rocket",
       ammo_type = {
         action = {
           action_delivery = {
@@ -45,7 +66,6 @@ data:extend{
       subgroup = "ammo",
       type = "ammo"
     },
-
 
 --["warptorio-atomic-bomb-wave"] -- the explosion effect
 {
@@ -101,8 +121,6 @@ data:extend{
       type = "projectile"
     },
 
-
-
 --["warptorio-atomic-rocket"] = -- the projectile
 {
       acceleration = 0.01,
@@ -138,8 +156,7 @@ data:extend{
                 amount = 400,
                 type = "explosion"
               },
-              type = "damage",
-            },
+              type = "damage"},
             {
               check_buildability = true,
               entity_name = "small-scorchmark",
@@ -164,11 +181,10 @@ data:extend{
           type = "instant"
         },
         type = "direct",
-	force="enemy",
-      },
+	force="enemy"},
       animation = { tint=rtint,
         filename = "__base__/graphics/entity/rocket/rocket.png",
-        frame_count = 8,
+        frame_count = 1,
         height = 35,
         line_length = 8,
         priority = "high",
@@ -186,17 +202,6 @@ data:extend{
         size = 15
       },
       name = "warptorio-atomic-rocket",
-      shadow = {
-        filename = "__base__/graphics/entity/rocket/rocket-shadow.png",
-        frame_count = 1,
-        height = 24,
-        priority = "high",
-        shift = {
-          0,
-          0
-        },
-        width = 7
-      },
       smoke = {
         {
           deviation = {
@@ -219,7 +224,6 @@ data:extend{
       type = "projectile"
     },
 
-
 --    ["smoke-fast"] = -- Additional smoke effects
 {
       animation = { tint=rtint,
@@ -235,8 +239,6 @@ data:extend{
       name = "warptorio-smoke-fast",
       type = "trivial-smoke"
     },
-
-
 
 --["nuclear-smoke"] = -- the smoke effect
 {
@@ -268,7 +270,6 @@ data:extend{
       type = "trivial-smoke"
     },
 
-
 --    explosion =
 {
 animations = {
@@ -277,20 +278,6 @@ animations = {
           filename = "__base__/graphics/entity/explosion/explosion-1.png",
           frame_count = 17,
           height = 22,
-          hr_version = {tint=rtint,
-            animation_speed = 0.5,
-            filename = "__base__/graphics/entity/explosion/hr-explosion-1.png",
-            frame_count = 17,
-            height = 42,
-            line_length = 6,
-            priority = "high",
-            scale = 0.5,
-            shift = {
-              0.140625,
-              0.1875
-            },
-            width = 48
-          },
           line_length = 6,
           priority = "high",
           shift = {
@@ -304,20 +291,6 @@ animations = {
           filename = "__base__/graphics/entity/explosion/explosion-3.png",
           frame_count = 17,
           height = 46,
-          hr_version = {tint=rtint,
-            animation_speed = 0.5,
-            filename = "__base__/graphics/entity/explosion/hr-explosion-3.png",
-            frame_count = 17,
-            height = 88,
-            line_length = 6,
-            priority = "high",
-            scale = 0.5,
-            shift = {
-              -0.03125,
-              0.046875
-            },
-            width = 102
-          },
           line_length = 6,
           priority = "high",
           shift = {
@@ -327,7 +300,6 @@ animations = {
           width = 52
         }
       },
-
 
       flags = {
         "not-on-map"
@@ -362,8 +334,4 @@ animations = {
         }
       },
       type = "explosion"
-    },
-
-
-
-}
+    }}

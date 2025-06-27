@@ -1,5 +1,0 @@
-events.raise_load()
-warptorio.CheckPlatformSpecials(global.floor["boiler"])
-warptorio.CheckPlatformSpecials(global.floor["factory"])
-warptorio.ResetHUD()
-game.print("Warptorio Migration 1.3.10")

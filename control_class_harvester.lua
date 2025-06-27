@@ -5,14 +5,13 @@ harvestpad item on upgrade
 
 	local lv=research.level("warptorio-harvester-"..self.name)
 	local cls="warptorio-harvestpad-"..lv
-	for k,v in pairs(game.players)do if(v and v.valid)then local iv=v.get_main_inventory() if(iv)then for i,x in pairs(iv.get_contents())do
+	for k,v in pairs(game.players)do if(v and v.valid)then local iv=v.get_main_inventory() if(iv)then for i,x in pairs(entity.get_contents_dict(iv))do
 		if(i:sub(1,20)=="warptorio-harvestpad" and i:sub(22,22+self.name:len())==self.name)then local lvx=tonumber(i:sub(-1,-1))
 			if(lvx<lv)then iv.remove{name=i,count=x} iv.insert{name=cls,count=1} elseif(x>1)then iv.remove{name=i,count=(x-1)} end
 		end
 	end end end end
 
 ]]
-
 
 --[[ Harvesters ]]--
 
@@ -25,8 +24,8 @@ function HARV.__init(self,tbl)
 	self.key=tbl.key
 	self.rank=1
 	local t={}
-	table.merge(t,table.deepcopy(warptorio.platform.harvesters[self.key]))
-	table.merge(t,table.deepcopy(warptorio.platform.HarvesterPointData))
+	table.merge(t,util.table.deepcopy(warptorio.platform.harvesters[self.key]))
+	table.merge(t,util.table.deepcopy(warptorio.platform.HarvesterPointData))
 	self.gdata=t
 	warptorio.TeleporterMeta.__init(self,self)
 	self.position=tbl.position
@@ -43,7 +42,7 @@ function HARV.__init(self,tbl)
 	self.gdata.pair[1].position=self.gdata.pair[1].position or self.position
 	self.chests=nil
 
-	global.Harvesters[tbl.key]=self
+	if storage then storage.Harvesters[tbl.key]=self end
 end
 function HARV:Data() return self.gdata end
 
@@ -57,7 +56,6 @@ end
 function HARV:GetBaseArea(z,rank) z=z or self:GetSize(rank)-1 return vector.square(self.position,vector(z,z)) end
 function HARV:GetDeployArea(z,rank) z=z or self:GetSize(rank)-2 return vector.square(vector.pos(self.deploy_position),vector(z,z)) end
 
-
 function HARV:CheckTeleporterPairs(bSound) -- Call updates and stuff. Automatically deals with logistics, upgrades and cleaning as-needed with good accuracy
 	local tps=self:Data()
 	local wps=warptorio.platform.HarvesterPointData
@@ -70,17 +68,16 @@ function HARV:CheckTeleporterPairs(bSound) -- Call updates and stuff. Automatica
 end
 
 function HARV:UpgradePlayerInventories()
-	for k,v in pairs(game.players)do if(v and v.valid)then local iv=v.get_main_inventory() if(iv)then for i,x in pairs(iv.get_contents())do
+	for k,v in pairs(game.players)do if(v and v.valid)then local iv=v.get_main_inventory() if(iv)then for i,x in pairs(entity.get_contents_dict(iv))do
 		if(i:sub(1,20)=="warptorio-harvestpad" and i:sub(22,22+self.key:len())==self.key)then local lvx=tonumber(i:sub(-1,-1))
 			if(lvx<lv)then iv.remove{name=i,count=x} iv.insert{name=cls,count=1} elseif(x>1)then iv.remove{name=i,count=(x-1)} end
 		end
 	end end end end
 end
 
-
 function HARV:MakePointTeleporter(tps,i,t,pos)
 	local p=self.points[i]
-	local f=global.floor[t.floor].host
+	local f=storage.floor[t.floor].host
 
 	local epos
 	if(t.prototype)then
@@ -95,7 +92,7 @@ function HARV:MakePointTeleporter(tps,i,t,pos)
 		if(not isvalid(e))then
 			local vepos=epos or (pos or t.position)
 			if(not vepos)then return end
-			local vpos=((t.gate and not epos) and f.find_non_colliding_position(vproto,vepos,0,1,1) or vepos)
+			local vpos=((t.gate and not epos) and f.find_non_colliding_position(vproto,vepos,0,1,true) or vepos)
 			local varea
 			if(not t.gate)then varea=vector.square(vpos,vector(2,2)) vector.clean(f,varea) end
 			e=entity.protect(entity.create(f,vproto,vpos),t.minable~=nil and t.minable or false,t.destructible~=nil and t.destructible or false)
@@ -117,7 +114,7 @@ function HARV:RunUpgrade()
 	local vz=self:GetSize()
 	local lv=warptorio.GetPlatformTechLevel(tps.tech)
 
-	local f=global.floor[tps.pair[1].floor].host
+	local f=storage.floor[tps.pair[1].floor].host
 
 	local pos=tps.position
 	if(not self.deployed)then
@@ -143,16 +140,24 @@ function HARV:RunUpgrade()
 	self.rank=lv
 end
 
-
 function HARV:Upgrade() self.ReadyUpgrade=true if(not self.deployed)then self:DoUpgrade() end end
 function HARV:DoUpgrade() if(self.ReadyUpgrade)then self.ReadyUpgrade=false self:RunUpgrade() end end
 
-
 --[[ Harvester Combinator ]]--
 
-
 function HARV:ConnectCombo() if(not self.deployed and self:ValidCombos())then
-	self.combos[1].connect_neighbour({target_entity=self.combos[2],wire=defines.wire_type.red}) self.combos[1].connect_neighbour({target_entity=self.combos[2],wire=defines.wire_type.green})
+	-- Factorio 2.0: Use new wire connector API
+	local source_red = self.combos[1].get_wire_connector(defines.wire_connector_id.circuit_red, true)
+	local source_green = self.combos[1].get_wire_connector(defines.wire_connector_id.circuit_green, true)
+	local target_red = self.combos[2].get_wire_connector(defines.wire_connector_id.circuit_red, true)
+	local target_green = self.combos[2].get_wire_connector(defines.wire_connector_id.circuit_green, true)
+	
+	if source_red and target_red then
+		source_red.connect_to(target_red)
+	end
+	if source_green and target_green then
+		source_green.connect_to(target_green)
+	end
 end end
 function HARV:ValidCombos() return isvalid(self.combos[1]) and isvalid(self.combos[2]) end
 function HARV:CheckCombo() if(research.has("warptorio-alt-combinator"))then self:MakeComboA() self:MakeComboB() self:ConnectCombo() end end
@@ -204,7 +209,11 @@ function HARV:MakePointLoader(tps,i,id,pos,f,belt,lddir,belty,beltsquare,vexdir)
 		local varea=vector.square(vpos,beltsquare)
 		vector.clean(f,varea)
 		v=entity.protect(entity.create(f,belt,vpos,lddir),false,false)
-		v.loader_type=self.dir[i][id]
+		
+		-- Fix loader_type assignment to match teleporter fix
+		local dir_type = self.dir[i][id]
+		v.loader_type = (dir_type == "input") and "output" or "input"
+		
 		self.loaders[i][id]=v
 		local inv=self.loaderFilter[i][id] if(inv)then for invx,invy in pairs(inv)do v.set_filter(invx,invy) end end
 	end
@@ -218,8 +227,8 @@ function HARV:CheckPointLogistics(i)
 	if(self.maxloader==0 or not tps.logs_pattern)then return end
 	local belt=warptorio.GetBelt()
 	local pos=tps.position
-	local f=global.floor.harvester.host
-	if(i==2 and self.deployed)then f=global.floor.main.host pos=self.deploy_position end
+	local f=storage.floor.harvester.host
+	if(i==2 and self.deployed)then f=storage.floor.main.host pos=self.deploy_position end
 
 	local ldl=0
 	local lvLogs=research.level("warptorio-logistics")
@@ -250,11 +259,8 @@ function HARV:CheckPointLogistics(i)
 	end
 end
 
-
-
 --[[ DEPLOY/RECALL ]]--
 --cleanlanding()
-
 
 function HARV:Recall(bply) -- recall after portal is mined
 	if(self.recalling)then return end self.recalling=true
@@ -271,18 +277,15 @@ function HARV:Recall(bply) -- recall after portal is mined
 	--if(isvalid(self.points[2].ent))then self.points[2].ent.destroy() end
 	--self.points[2].ent=nil
 
-
-
-	local f=global.floor.main.host
+	local f=storage.floor.main.host
 	local ebs={}
 	for k,v in pairs(f.find_entities_filtered{type="character",invert=true,area=self:GetDeployArea(nil,true)})do
 		if(v.type~="resource" and v~=self.points[1].ent)then table.insert(ebs,v) end
 		--v~=self.b and v~=self.a and (v.name=="warptorio-combinator" or v.name:sub(1,9)~="warptorio") )then table.insert(ebs,v) end
 	end
 
-	local hf=global.floor.harvester.host
+	local hf=storage.floor.harvester.host
 	local harvArea=self:GetBaseArea(nil,true)
-
 
 	local tbs={}
 	local tcs={} for k,v in pairs(hf.find_tiles_filtered{area=harvArea})do
@@ -295,12 +298,9 @@ function HARV:Recall(bply) -- recall after portal is mined
 		table.insert(dcs,{name=v.decorative.name,position=vpos,amount=v.amount})
 	end
 
-
 	local ecs={} for k,v in pairs(hf.find_entities_filtered{area=harvArea,type="character",invert=true})do
 		if(v and v.valid and v~=self.points[1].ent and v~=self.points[2].ent and not entity.shouldClean(v) and not cache.get_entity(v) and v.type~="resource")then table.insert(ecs,v) end
 	end
-
-
 
 	local blacktbl={}
 	for k,v in pairs(ebs)do if(table.HasValue(warptorio.GetWarpBlacklist(),v.name))then table.insert(blacktbl,v) ebs[k]=nil end end
@@ -309,16 +309,16 @@ function HARV:Recall(bply) -- recall after portal is mined
 	for k,v in pairs(ecs)do if(table.HasValue(warptorio.GetWarpBlacklist(),v.name))then table.insert(blacktbl,v) ecs[k]=nil end end
 	for k,v in pairs(ecs)do if(table.HasValue(warptorio.GetModTable("harvester_blacklist"),v.name))then table.insert(blacktbl,v) ecs[k]=nil end end
 
-
 	warptorio.Cloned_Entities={} warptorio.IsCloning=true
-	hf.clone_entities{entities=ecs,destination_surface=f,destination_offset=vector.add(vector.mul(self.position,-1),self.deploy_position),snap_to_grid=false}
+	local offset1 = vector.raw(vector.add(vector.mul(self.position,-1),self.deploy_position))
+	hf.clone_entities{entities=ecs,destination_surface=f,destination_offset={offset1.x,offset1.y},snap_to_grid=false}
 	local hfe=warptorio.Cloned_Entities warptorio.IsCloning=false warptorio.Cloned_Entities=nil
-
 
 	if(#ebs>0)then for i=#ebs,1,-1 do if(not ebs[i] or not ebs[i].valid)then table.remove(ebs,i) end end end -- bad ents in table ?
 
 	warptorio.Cloned_Entities={} warptorio.IsCloning=true
-	f.clone_entities{entities=ebs,destination_surface=hf,destination_offset=vector.add(vector.mul(self.deploy_position,-1),self.position),snap_to_grid=false}
+	local offset2 = vector.raw(vector.add(vector.mul(self.deploy_position,-1),self.position))
+	f.clone_entities{entities=ebs,destination_surface=hf,destination_offset={offset2.x,offset2.y},snap_to_grid=false}
 	local fe=warptorio.Cloned_Entities warptorio.IsCloning=false warptorio.Cloned_Entities=nil
 
 	local hfm={} for k,v in pairs(hfe)do if(isvalid(v.source) and isvalid(v.destination) and table.HasValue(ecs,v.source))then table.insert(hfm,v.source) end end
@@ -337,7 +337,7 @@ function HARV:Recall(bply) -- recall after portal is mined
 		for k,v in pairs(game.players)do if(v.character==nil or (v.surface==f and vector.inarea(v.position,self:GetDeployArea(nil,true))) )then
 			table.insert(tpply,{v,vector.add(vector.add(vector.mul(self.deploy_position,-1),vector.pos(v.position)),self.position)})
 		end end
-		for k,v in pairs(tpply)do v[1].teleport(f.find_non_colliding_position("character",{v[2][1],v[2][2]},0,1),hf) end
+		for k,v in pairs(tpply)do v[1].teleport(f.find_non_colliding_position("character",{v[2][1],v[2][2]},0,1,true),hf) end
 	end
 
 	--vector.LayTiles("warp-tile-concrete",hf,self:GetBaseArea(self:GetSize()+2))
@@ -355,14 +355,12 @@ function HARV:Recall(bply) -- recall after portal is mined
 
 end
 
-
-
 function HARV:Deploy(surf,pos) -- deploy over a harvester platform
 	if(self.deployed)then return false end
 	local f=surf if(f~=warptorio.GetMainSurface())then game.print("Harvesters can only be placed on the planet") return false end
 	--game.print("deployed at: " .. serpent.line(pos))
 	self.deploy_position=vector.pos(pos)
-	local hf=global.floor.harvester.host
+	local hf=storage.floor.harvester.host
 
 	local ebs=hf.find_entities_filtered{type="character",invert=true,area=self:GetBaseArea()}
 
@@ -384,21 +382,14 @@ function HARV:Deploy(surf,pos) -- deploy over a harvester platform
 	local ebsc=#ebs
 	local ecsc=#ecs
 
-
 	local blacktbl={}
-	--for k,v in pairs(ebs)do if(isvalid(v))then if(table.HasValue(warptorio.GetWarpBlacklist(),v.name))then table.insert(blacktbl,v) ebs[k]=nil end end end
-	--for k,v in pairs(ebs)do if(isvalid(v))then if(table.HasValue(warptorio.GetModTable("harvester_blacklist"),v.name))then table.insert(blacktbl,v) ebs[k]=nil end end end
-
-	--for k,v in pairs(ecs)do if(isvalid(v))then if(table.HasValue(warptorio.GetWarpBlacklist(),v.name))then table.insert(blacktbl,v) ecs[k]=nil end end end
-	--for k,v in pairs(ecs)do if(isvalid(v))then if(table.HasValue(warptorio.GetModTable("harvester_blacklist"),v.name))then table.insert(blacktbl,v) ecs[k]=nil end end end
-
 
 	if(ecsc>0)then for i=ecsc,1,-1 do if(not ecs[i] or not ecs[i].valid)then table.remove(ecs,i) end end end -- bad ents in table ?
 
 	warptorio.Cloned_Entities={} warptorio.IsCloning=true
-	f.clone_entities{entities=ecs,destination_surface=hf,destination_offset=vector.mul(vector.sub(self.deploy_position,self.position),-1),snap_to_grid=false}
+	local offset = vector.raw(vector.mul(vector.sub(self.deploy_position,self.position),-1))
+	f.clone_entities{entities=ecs,destination_surface=hf,destination_offset={offset.x,offset.y},snap_to_grid=false}
 	local fe=warptorio.Cloned_Entities warptorio.IsCloning=false warptorio.Cloned_Entities=nil
-
 
 	if(ebsc>0)then for i=ebsc,1,-1 do if(not ebs[i] or not ebs[i].valid)then table.remove(ebs,i) end end end -- bad ents in table ?
 
@@ -407,7 +398,8 @@ function HARV:Deploy(surf,pos) -- deploy over a harvester platform
 	-- this doesnt really work
 
 	warptorio.Cloned_Entities={} warptorio.IsCloning=true
-	hf.clone_entities{entities=ebs,destination_surface=f,destination_offset=vector.mul(vector.sub(self.position,self.deploy_position),-1),snap_to_grid=false}
+	local offset3 = vector.raw(vector.mul(vector.sub(self.position,self.deploy_position),-1))
+	hf.clone_entities{entities=ebs,destination_surface=f,destination_offset={offset3.x,offset3.y},snap_to_grid=false}
 	local hfe=warptorio.Cloned_Entities warptorio.IsCloning=false warptorio.Cloned_Entities=nil
 
 	local hfm={} for k,v in pairs(hfe)do if(isvalid(v.source) and isvalid(v.destination) and table.HasValue(ebs,v.source))then table.insert(hfm,v.source) end end
@@ -424,5 +416,4 @@ function HARV:Deploy(surf,pos) -- deploy over a harvester platform
 	-- game.print("deployed")
 	self:CheckTeleporterPairs()
 end
-
 

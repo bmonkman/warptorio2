@@ -1,0 +1,35 @@
+Removed LuaPlayer::open_map, zoom_to_world, and close_map. LuaPlayer::set_controller with type 'remote' replaces these.
+Removed util.online_players. Use game.connected_players instead.
+Removed LuaEntity::is_entity_with_force. Use LuaEntity::is_military_target instead.
+Removed LuaForce::get_saved_technology_progress() and set_saved_technology_progress(). Moved LuaGameScript::request_train_path into LuaTrainManager::request_train_path.
+Removed LuaEntity::get_rail_segment_entity. Removed ability of reading FluidWagon's fluid storage or FluidTurret's internal buffer fluid storage using LuaFluidBox.
+Removed LuaEntity::get_upgrade_direction() method.
+Removed __self from the LuaObjects. Intended way of checking if an object is a lua object is to check type is userdata.
+Removed LuaEntity::circuit_connected_entities, LuaEntity::circuit_connection_definitions and LuaEntity::copper_connection_definitions.
+Removed LuaEntity::neighbours support for electric poles and power switches.
+Removed LuaEntity::connect_neighbour and LuaEntity::disconnect_neighbour.
+Removed defines.circuit_connector_id.
+Removed LuaForce::item_production_statistics, fluid_production_statistics, kill_count_statistics and entity_build_count_statistics reads.
+Removed LuaGameScript::pollution_statistics read.
+Removed LuaControl::clear_vehicle_logistic_slot, get_vehicle_logistic_slot, set_vehicle_logistic_slot, clear_personal_logistic_slot, get_personal_logistic_slot and set_personal_logistic_slot.
+Removed LuaEntity::clear_request_slot(), get_request_slot() and set_request_slot() methods.
+Removed LuaEntity::request_slot_count read.
+Removed LuaTrain::front_rail, back_rail, rail_direction_from_front_rail, rail_direction_from_back_rail. They are replaced with LuaTrain::get_rail_end.
+Removed LuaFluidBox::get_flow() method.
+Removed LuaEntityPrototype::collision_mask_with_flags, LuaTilePrototype::collision_mask_with_flags and LuaDecorativePrototype::collision_mask_with_flags. Respective collision_mask returns mask with flags instead.
+Removed LuaTechnology::effects, use LuaTechnologyPrototype::effects instead.
+Removed LuaNoiseLayerPrototype.
+Removed LuaItemPrototype::limitations and LuaItemPrototype::limitation_message_key reads.
+Removed LuaGameScript::get_active_entities_count() method.
+Removed LuaGameScript::count_pipe_groups() method.
+Removed LuaForce::zoom_to_world_* properties.
+Removed LuaForce::research_queue_enabled read/write.
+Removed LuaGuiElement::get_slider_discrete_slider(), set_slider_discrete_slider(), and discrete_slider.
+Removed LuaGuiElement::clear_and_focus_on_right_click, it is now always true.
+Removed LuaEntity::text.
+Removed LuaPlayer::log_active_entity_chunk_counts() and log_active_entity_counts() methods.
+Removed LuaAutoplaceControl::control_order since it was a duplicate of ::order.
+Removed help() method from every Factorio Lua object.
+Removed LuaObject::isluaobject.
+Removed LuaEntity::set_command, set_distraction_command, command, distraction_command and moving.
+Removed LuaEntityPrototype::max_health. Changed on_cutscene_waypoint_reached event's parameter "waypoint_index" to not be zero indexed.

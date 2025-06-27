@@ -20,16 +20,15 @@ data:extend(
   {
     type = "sound",
     name = "reactor-stabilized",
-	filename = "__warptorio2__/sound/reactor_stabilized.ogg"
+	filename = "__warptorioSA__/sound/reactor_stabilized.ogg"
   },  
   {
     type = "sound",
     name = "teleport",
-	filename = "__warptorio2__/sound/teleport.ogg"
+	filename = "__warptorioSA__/sound/teleport.ogg"
   },   
   {
     type = "sound",
     name = "stairs",
 	filename = "__base__/sound/inserter-long-handed.ogg"
-  },    
-})
+  }})

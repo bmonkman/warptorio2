@@ -1,0 +1,27 @@
+Changed Vectors to always be read from the game as the two-element array format instead of sometimes using x and y keys. This mostly affects properties of TriggerEffectItem. Writing a Vector to the game still accepts both formats.
+Changed on_entity_damaged.cause semantics
+Replaced dealer argument with source and cause arguments in LuaEntity::damage().
+Changed LuaSurface::spill_item_stack to take a table of parameters.
+Lua functions inside of `global` will now throw an error when saving instead of being silently discarded.
+LuaInventory::get_contents() will now return an array of {name = name, count = count, quality = quality}.
+Changed market price items to be defined as {name = name, count = count, quality = quality }.
+LuaEntity::rotate no longer takes "spill_items", "enable_looted" nor "force" parameter.
+Changed on_built_entity event. Instead of stack/item, it passes consumed_items - modifiable stack of items used for the building.
+LuaTile::to_be_deconstructed() and related events can be given a force. If not given, it checks if tile is to be deconstructed by any force.
+Moved LuaItemPrototype::mapper_count property to LuaItemCommon.
+LuaBootstrap::raise_event()'s "event" parameter now also accepts event names as string as alternative to their numerical IDs. The event names are needed to raise custom events.
+LuaBootstrap::on_event()'s "event" parameter now accepts event names for built-in events too, in addition to for custom inputs and the new custom events.
+Type of LuaObjects is now "userdata" instead of "table".
+LuaCircuitNetwork is now binding to WireConnectorID. Removed LuaCircuitNetwork::circuit_connector_id. LuaEntity::get_circuit_network and LuaControlBehavior::get_circuit_network now require exactly 1 parameter: wire_connector_id.
+Replaced LuaEntity::get_merged_signal with LuaEntity::get_signal and LuaEntity::get_merged_signals with LuaEntity::get_signals. They no longer take circuit_connector_id but wire_connector_id.
+Electric pole created through LuaSurface::create_entity can be requested to not auto connect.
+Replaced LuaFlowStatistics::get_flow_count parameter "bool input" with "string category" to reflect the addition of the "storage" category.
+Unified the way logistic filters are accessed, removed specific character/spidertron logistic filter methods, and all is done through get_logistic_point and get_section.
+CircuitCondition passed to or given by LuaControlBehavior no longer uses the "condition" table, condition should be given directly.
+Moved LuaGameScript::get_train_by_id into LuaTrainManager::get_train_by_id.
+LuaGameScript::print, LuaPlayer::print, LuaSurface::print and LuaForce::print no longer accept Color as a second parameter.
+Changed permission related events to also fire when mods edit permissions.
+Changed LuaForce::ghost_time_to_live to LuaForce::create_ghost_on_entity_death bool read/write.
+Changed LuaEquipmentGrid::generator_energy read to LuaEquipmentGrid::get_generator_energy() method.
+Moved LuaControl::get_blueprint_entities to LuaItemCommon and LuaRecord.
+Changed LuaEntity::electric_output_flow_limit and electric_input_flow_limit read to get_electric_output_flow_limit() and get_electric_input_flow_limit() methods.

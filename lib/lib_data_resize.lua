@@ -23,57 +23,34 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-------
-
-Written using Microsoft Notepad.
-IDE's are for children.
-
-How to notepad like a pro:
-ctrl+f = find
-ctrl+h = find & replace
-ctrl+g = show/jump to line (turn off wordwrap n00b)
-
-Status bar wastes screen space, don't use it.
-
-Use https://tools.stefankueng.com/grepWin.html to mass search, find and replace many files in bulk.
-
 ]]---------------------------------------
 
 -- Todo: resize equipments to 1x1 https://mods.factorio.com/mod/Super_Pinky_Man_SmallPortableEquipment
 
 local proto={}
 
-
-
-
 proto.no_resize_types={"item","item-on-ground","item-entity","item-request-proxy","tile","resource","recipe",
 "rail","locomotive","cargo-wagon","fluid-wagon","artillery-wagon","rail-chain-signal","rail-signal",
 --"pipe","pipe-to-ground","infinity-pipe",
 "underground-belt","transport-belt","splitter",
 --"construction-robot","logistic-robot","combat-robot","electric-pole","rocket-silo","rocket-silo-rocket",
---"offshore-pump",
-}
+"offshore-pump"}
 
 function proto.ShouldResize(pr) if(table.HasValue(proto.no_resize_types,pr.type))then return false end return true end
-
 
 --[[ Basic pictures and layers and offsets resizing and rescaling ]]--
 
 proto.scale_keys={"alert_icon_scale"} -- Stuff that is a single number. todo.
-
 
 proto.offset_keys={
  -- Table keys that are offsets
 "north_position","south_position","east_position","west_position","red","green","alert_icon_shift",
 -- Spider keys
 --[[
-"light_positions",
-]]
+"light_positions"]]
 "ground_position",
 "offset_deviation",
-"mount_position",
-
-}
+"mount_position"}
 function proto.IsImageLayer(k,v) if(v.filenames)then for i,e in pairs(v.filenames)do if(e:find(".png"))then return true end end end return v.layers or (v.filename and v.filename:find(".png")) or k=="animation" end
 function proto.IsOffsetLayer(k,v) return (istable(v) and isstring(k) and (k:find("offset") or table.HasValue(proto.offset_keys,k))) end
 function proto.IsRailLayer(k,v) return istable(v) and (v.metals or v.backplates) end
@@ -83,11 +60,11 @@ function proto.LoopFindImageLayers(prototype,lz) if(not prototype)then return en
 	end
 end end end
 function proto.FindImageLayers(prototype) local imgz={images={},offsets={},rails={}} proto.LoopFindImageLayers(prototype,imgz) return imgz end
-function proto.MergeImageTable(img,tbl) if(img.hr_version)then proto.MergeImageTable(img.hr_version,table.deepcopy(tbl)) end table.merge(img,table.deepcopy(tbl)) end
+function proto.MergeImageTable(img,tbl) table.merge(img,table.deepcopy(tbl)) end
 function proto.MultiplyOffsets(v,z) --if(v[1] and istable(v[1]) and not vector.is_zero(v[1]) and not vector.is_zero(v[2]))then
 	for a,b in pairs(v)do if(istable(b))then for c,d in pairs(b)do if(type(d)=="table")then error(serpent.block(v)) end v[a][c]=d*z end else v[a]=b*z end end --else vector.set(v,vector(v)*z) --v[1]=v[1]*z v[2]=v[2]*z
 end --end
-function proto.MultiplyImageSize(img,z) if(img.hr_version)then proto.MultiplyImageSize(img.hr_version,z) end
+function proto.MultiplyImageSize(img,z)
 	if(img.shift and istable(img.shift))then for i,e in pairs(img.shift)do if(istable(e))then for a,b in pairs(e)do e[a]=b*z end else img.shift[i]=e*z end end end
 	img.scale=(img.scale or 1)*z img.y_scale=(img.y_scale or 1)*z img.x_scale=(img.x_scale or 1)*z
 end
@@ -98,12 +75,8 @@ function proto.MultiplyImages(pr,z) local imgz=proto.FindImageLayers(pr)
 	for k,v in pairs(imgz.offsets)do proto.MultiplyOffsets(v,z) end
 end
 
-
-
-
 proto.bbox_keys={"collision_box","selection_box",  -- Table keys that are bounding boxes
-	"drawing_box","window_bounding_box","horizontal_window_bounding_box","sticker_box","map_generator_bounding_box",
-}
+	"drawing_box","window_bounding_box","horizontal_window_bounding_box","sticker_box","map_generator_bounding_box"}
 proto.ScalableBBoxes={"collision_box","selection_box"} -- Ordered pairs of bounding boxes we can make sized based calculations from
 function proto.BBoxIsZero(bbox) if(bbox and bbox[1][1]==0 and bbox[1][2]==0 and bbox[2][1]==0 and bbox[2][2]==0)then return true end return false end
 function proto.GetSizableBBox(pr) local b=pr[proto.ScalableBBoxes[1]] for i=2,#proto.ScalableBBoxes,1 do if(not b or proto.BBoxIsZero(b))then b=pr[proto.ScalableBBoxes[i]] else return b end end return b end
@@ -113,7 +86,6 @@ function proto.AddBBox(b,f) b[1]=vector.raw(vector(b[1])-vector(f)) b[2]=vector.
 function proto.AddBBoxes(t,f) for _,nm in pairs(proto.bbox_keys)do if(t[nm] and not proto.BBoxIsZero(t[nm]))then proto.AddBBox(t[nm],f) end end end
 function proto.BBoxSize(b) return vector(b[2])-vector(b[1]) end
 function proto.RecenterBBox(b) local len=proto.BBoxSize(b) b[2]=len/2 b[1]=-len/2 end
-
 
 function proto.GetBBoxOrigin(bbox) -- This is to give us +0.5 origin if the bbox needs it, but i dont think this is needed idfk
 	local bbx=proto.BBoxSize(bbox)
@@ -132,9 +104,7 @@ function proto.SizeToTile(pr,tilesize) -- Resizes something to a tile size based
 	proto.SizeTo(pr,tilesize/math.max(bbx.x,bbx.y))
 end
 
-
 --[[ Fluidbox Counter/Scanner ]]--
-
 
 proto.fluidbox_keys={"fluid_boxes","fluid_box","input_fluid_box","output_fluid_box"}
 
@@ -213,8 +183,6 @@ function proto.AutoResize(pr,tilesize)
 	--if(pr.name=="chemical-plant")then proto.dbg=true end
 	--if(pr.name=="pump")then proto.dbg=true end
 
-
-
 	if(fbc.c>0)then -- Do the fluidbox thing
 		local pipesizemin=math.max(goalsize,fbc.northern,fbc.southern,fbc.eastern,fbc.western) -- The minimum tile-size we can be due to fluidboxes
 		goalsize=pipesizemin
@@ -228,16 +196,10 @@ function proto.AutoResize(pr,tilesize)
 
 	--if(proto.dbg)then error("DEBUG: Size " .. goalsize .. ", bbmax: " .. pipemax .. ", scale: " .. goalsize/bbmax .. ", Pipescale: " .. serpent.block(pipescale) .. "\nData:\n"..serpent.block(pr).."\n---------------FB----------------\n"..serpent.block(fbc).."\n".."") end
 
-
-
-
-
 	end
 
 	proto.SizeTo(pr,goalsize/bbmax)
 
 end
-
-
 
 return proto

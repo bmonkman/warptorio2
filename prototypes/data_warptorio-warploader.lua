@@ -5,15 +5,17 @@ data:extend{
 		stack_size=50,
 		icon_size=64,icons={{tint=rtint,icon="__base__/graphics/icons/express-loader.png"}},
 		order = "e[express-loader]-d[warptorio-warploader]",
-		place_result="warptorio-warploader",
-	},
+		place_result="warptorio-warploader"},
 
 	{ name="warptorio-warploader", type="recipe",category="crafting-with-fluid",enabled=false,energy_required=2,
-		ingredients={ {"iron-gear-wheel",400},{"express-underground-belt",50},{"express-transport-belt",100},{"express-splitter",50},{amount=200,name="lubricant",type="fluid"} },
-		result="warptorio-warploader",result_count=1,
-	},
-	
-
+		ingredients={
+			{type="item", name="iron-gear-wheel", amount=400},
+			{type="item", name="express-underground-belt", amount=50},
+			{type="item", name="express-transport-belt", amount=100},
+			{type="item", name="express-splitter", amount=50},
+			{type="fluid", name="lubricant", amount=200}
+		},
+		results={{type="item", name="warptorio-warploader", amount=1}}},
 
     {--["express-loader"] = 
 	container_distance=0,
@@ -24,15 +26,6 @@ data:extend{
           filename = "__base__/graphics/entity/express-transport-belt/express-transport-belt.png",
           frame_count = 32,
           height = 64,
-          hr_version = { tint=rtint,
-            direction_count = 20,
-            filename = "__base__/graphics/entity/express-transport-belt/hr-express-transport-belt.png",
-            frame_count = 32,
-            height = 128,
-            priority = "extra-high",
-            scale = 0.5,
-            width = 128
-          },
           priority = "extra-high",
           width = 64
         },
@@ -72,15 +65,14 @@ data:extend{
       filter_count = 5,
       flags = {
         "placeable-neutral",
-        "player-creation",
-        "fast-replaceable-no-build-while-moving"
+        "player-creation"
       },
       icons = {{icon="__base__/graphics/icons/express-loader.png",tint=rtint}},
       icon_size = 32,
       max_health = 170,
       minable = {
         mining_time = 0.1,
-        result = "warptorio-warploader"
+        results = {{type="item", name="warptorio-warploader", amount=1}}
       },
       name = "warptorio-warploader",
       resistances = {
@@ -120,6 +112,4 @@ data:extend{
         }
       },
       type = "loader"
-    },
-
-}
+    }}

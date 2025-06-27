@@ -1,0 +1,11 @@
+Renamed LuaSettings::player to player_default.
+Renamed LuaEntityPrototype::stack to LuaEntityPrototype::bulk.
+Renamed LuaLogisticContainerControlBehavior::circuit_mode_of_operation into circuit_exclusive_mode_of_operation.
+Renamed LuaFluidBox::get_fluid_system_id() to get_fluid_segment_id().
+Renamed LuaFluidBox::get_fluid_system_contents() to get_fluid_segment_contents().
+Renamed LuaItemStack::blueprint_icons into preview_icons.
+Renamed on_entity_destroyed event into on_object_destroyed.
+Renamed LuaBootstrap::register_on_entity_destroyed into LuaBootstrap::register_on_object_destroyed.
+Renamed LuaUnitGroup into LuaCommandable. Renamed LuaCommandable::group_number into LuaCommandable::id.
+Renamed LuaEntity::electric_emissions to electric_emissions_per_joule.
+Renamed LuaForce::stack_inserter_capacity_bonus to bulk_inserter_capacity_bonus.

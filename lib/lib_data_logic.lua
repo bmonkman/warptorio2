@@ -23,23 +23,7 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-------
-
-Written using Microsoft Notepad.
-IDE's are for children.
-
-How to notepad like a pro:
-ctrl+f = find
-ctrl+h = find & replace
-ctrl+g = show/jump to line (turn off wordwrap n00b)
-
-Status bar wastes screen space, don't use it.
-
-Use https://tools.stefankueng.com/grepWin.html to mass search, find and replace many files in bulk.
-
 ]]---------------------------------------
-
-
 
 local logic={}
 logic.loading=true
@@ -116,8 +100,7 @@ logic.SeablockScience={
 	["basic-circuit-board"]="sb-basic-circuit-board-tool",
 	["algae-green"]="sb-algae-green-tool",
 	["sulfur"]="sb-sulfur-tool",
-	["lab"]="sb-lab-tool",
-}
+	["lab"]="sb-lab-tool"}
 
 -- Other initial conditions
 function logic.Seablock() hand.pole=true hand.power=true hand.pipes=true hand.belts=true hand.inserters=true
@@ -147,15 +130,12 @@ function logic.Seablock() hand.pole=true hand.power=true hand.pipes=true hand.be
 	--logic.PushItem(data.raw.tool["sb-algae-green-tool"],0,true) -- because apparently this is a special item you can't actually obtain. why.
 	--logic.PushItem(data.raw.tool["sb-lab-tool"],0,true) -- because apparently this is a special item you can't actually obtain. why.
 
-
 	--logic.Ignore("offshore-pump")
 	--logic.Ignore("crystallizer")
 	--logic.Ignore("electrolyzer")
 end
 
 function logic.HasMoreRecipes() for k,v in pairs(data.raw.recipe)do if(not hand.recipescan[k] and proto.UsedRecipe(k) and not logic.ShouldIgnore(k))then return true end end return false end
-
-
 
 -- Easy check if Fluid (with temperatures) or Item is in our hand (by name)
 -- fluids may need a min/max...
@@ -172,15 +152,12 @@ function logic.CanFluid(d,n,x) n=n or 15 local ft=hand.fluids[d] if(ft)then if(n
 	return false
 end end end
 
-
 function logic.Fluid(fld,tmp) tmp=tmp or 15 return hand.fluids[fld] and hand.fluids[fld][tmp] end
 function logic.Item(n) return logic.hand.items[n] end
 function logic.Can(n,x,y) return (x and rando.CanFluid(n,x,y) or (rando.Item(n) or rando.CanFluid(n))) end
 
-
 --[[ Energy Sources & CanDoStuff() functions ]]--
 -- logic.CanFuel(energy_source)
-
 
 logic.CanFuel=setmetatable({},{__call=function(t,n,...)
 	if(istable(n))then
@@ -208,8 +185,6 @@ function logic.CanFuelFluidbox(fbox,min,max)
 	return logic.CanFluid(ft,min,max)
 end
 function logic.CanFuel.fluid(fuel) if(fuel.pipe_connections)then return logic.CanFuelFluidbox(fuel) else return logic.CanFuelFluidbox(fuel.fluid_box,nil,fuel.maximum_temperature) end end
-
-
 
 function logic.CanMineResource(c)
 	local cat=c.category or "basic-solid"
@@ -302,7 +277,6 @@ function logic.PushTechnology(c) local n=proto.Name(c) if(not hand.techs[n])then
 function logic.PushEntity(c,s) local n=proto.Name(c) if(not hand.ents[n])then hand.ents[n]=c if(s)then logic.ScanEntity(c) end logic.HandChanged("entity",c) end end
 function logic.PushFluid(c,m) m=m or 15 local n=proto.Name(c) hand.fluids[n]=hand.fluids[n] or {} hand.fluids[n][m]=c logic.HandChanged("fluid",c,m) end
 
-
 function logic.PushCraftCat(v,n) if(not hand.craft_cats[v] or (n and hand.craft_cats[v]<n))then hand.craft_cats[v]=n or 0 logic.HandChanged("craft_cats",v,n) end end
 function logic.PushFuelCat(c,n) if(not hand.burner_cats[c] or (n and hand.burner_cats[c]<n))then hand.burner_cats[c]=n or 0 logic.HandChanged("burner_cats",c,n) end end
 function logic.PushResourceCat(c,n) if(not hand.resource_cats[c] or (n and hand.resource_cats[c]<n))then hand.resource_cats[c]=n or 0 logic.HandChanged("resource_cats",c,n) end end
@@ -328,36 +302,30 @@ function logic.PushResults(rz,lvl,bscan) if(rz)then for k,v in pairs(rz)do local
 -- Do logic for specific entities, and determine whether we can use/fuel them and then update our hand accordingly.
 -- Return true if we can do ALL the things, or false if we need to re-scan this entity
 
-
 -- https://wiki.factorio.com/Prototype/Generator
 logic.ent["generator"]={
 scan=function(t) local f=t.burner or t.fluid_box if(f and logic.CanFuel(f))then return true end end,
-push=function(t) logic.PushFuel(t.energy_source) end,
-}
+push=function(t) logic.PushFuel(t.energy_source) end}
 
 -- https://wiki.factorio.com/Prototype/Boiler
 logic.ent["boiler"]={
 scan=function(t) if(logic.CanFuel(t.energy_source) and logic.CanFuel(t.fluid_box or t.input_fluid_box))then return true end end,
-push=function(t) local f=t.output_fluid_box.filter if(f)then logic.PushFluid(data.raw.fluid[f],t.target_temperature) end end,
-}
+push=function(t) local f=t.output_fluid_box.filter if(f)then logic.PushFluid(data.raw.fluid[f],t.target_temperature) end end}
 
 -- https://wiki.factorio.com/Prototype/AssemblingMachine
 logic.ent["assembling-machine"]={
 scan=function(t) if(logic.CanFuel(t.energy_source))then return true end end,
-push=function(t) for k,v in pairs(proto.CraftingCategories(t.crafting_categories))do logic.PushCraftCat(v,1) end end,
-}
+push=function(t) for k,v in pairs(proto.CraftingCategories(t.crafting_categories))do logic.PushCraftCat(v,1) end end}
 
 -- https://wiki.factorio.com/Prototype/Furnace
 logic.ent["furnace"]={
 scan=function(t) if(not t.energy_source or logic.CanFuel(t.energy_source))then return true end end,
-push=function(t) for k,v in pairs(proto.CraftingCategories(t.crafting_categories))do logic.PushCraftCat(v,1) end end,
-}
+push=function(t) for k,v in pairs(proto.CraftingCategories(t.crafting_categories))do logic.PushCraftCat(v,1) end end}
 
 -- https://wiki.factorio.com/Prototype/Lab
 logic.ent["lab"]={ -- Pushes labslots on scan, which can be partially completed.
 scan=function(t) if(logic.CanFuel(t.energy_source))then return true end end,
-push=function(t) for k,v in pairs(t.inputs)do logic.PushLabSlot(v) end end,
-}
+push=function(t) for k,v in pairs(t.inputs)do logic.PushLabSlot(v) end end}
 
 -- https://wiki.factorio.com/Prototype/MiningDrill
 logic.ent["mining-drill"]={
@@ -368,34 +336,27 @@ push=function(t)
 	end end
 	for k,v in pairs(t.resource_categories)do logic.PushResourceCat(v,1) end
 	return true
-end,
-}
+end}
 
 -- https://wiki.factorio.com/Prototype/Pipe
 logic.ent["pipe"]={
 scan=function(t) return true end,
-push=function(t) if(not hand.pipes)then hand.pipes=true logic.HandChanged() end end,
-}
+push=function(t) if(not hand.pipes)then hand.pipes=true logic.HandChanged() end end}
 
 -- https://wiki.factorio.com/Prototype/PipeToGround
 logic.ent["pipe-to-ground"]={
 scan=function(t) return true end,
-push=function(t) if(not hand.pipe_to_ground)then hand.pipe_to_ground=true logic.HandChanged() end end,
-}
-
+push=function(t) if(not hand.pipe_to_ground)then hand.pipe_to_ground=true logic.HandChanged() end end}
 
 -- https://wiki.factorio.com/Prototype/Inserter
 logic.ent["inserter"]={
 scan=function(t) if(logic.CanFuel(t.energy_source))then return true end end,
-push=function(t) if(not hand.inserters)then hand.inserters=true logic.HandChanged() end end,
-}
+push=function(t) if(not hand.inserters)then hand.inserters=true logic.HandChanged() end end}
 
 -- https://wiki.factorio.com/Prototype/ElectricPole
 logic.ent["electric-pole"]={
 scan=function(t) return true end,
-push=function(t) if(not hand.pole)then hand.pole=true logic.HandChanged("pole") end end,
-}
-
+push=function(t) if(not hand.pole)then hand.pole=true logic.HandChanged("pole") end end}
 
 -- https://wiki.factorio.com/Prototype/RocketSilo
 logic.ent["rocket-silo"]={
@@ -411,39 +372,33 @@ push=function(t) for k,v in pairs(proto.CraftingCategories(t.crafting_categories
 	hand.rocket_silo=true
 	if(t.fixed_recipe)then logic.PushRecipe(data.raw.recipe[t.fixed_recipe],1) end
 	logic.HandChanged()
-end,
-}
+end}
 -- https://wiki.factorio.com/Prototype/Reactor
 logic.ent["reactor"]={
 scan=function(t) if(logic.CanFuel(t.energy_source))then return true end end,
-push=function(t) logic.PushHeat(t.heat_buffer) end,
-}
+push=function(t) logic.PushHeat(t.heat_buffer) end}
 
 -- https://wiki.factorio.com/Prototype/TransportBelt
 logic.ent["transport-belt"]={
 scan=function(t) return true end,
-push=function(t) if(not hand.belts)then hand.belts=true logic.HandChanged() end return true end,
-}
+push=function(t) if(not hand.belts)then hand.belts=true logic.HandChanged() end return true end}
 
 -- https://wiki.factorio.com/Prototype/UndergroundBelt
 logic.ent["underground-belt"]={
 scan=function(t) return true end,
-push=function(t) if(not hand.underground_belts)then hand.underground_belts=true logic.HandChanged() end end,
-}
+push=function(t) if(not hand.underground_belts)then hand.underground_belts=true logic.HandChanged() end end}
 
 -- https://wiki.factorio.com/Prototype/Splitter
 logic.ent["splitter"]={
 scan=function(t) return true end,
-push=function(t) if(not hand.splitters)then hand.splitters=true logic.HandChanged() end end,
-}
+push=function(t) if(not hand.splitters)then hand.splitters=true logic.HandChanged() end end}
 
 -- https://wiki.factorio.com/Prototype/ResourceEntity -- unused
 
 -- https://wiki.factorio.com/Prototype/OffshorePump
 logic.ent["offshore-pump"]={
 scan=function(t) return true end,
-push=function(t) if(t.fluid)then logic.PushFluid(data.raw.fluid[t.fluid]) end end,
-}
+push=function(t) if(t.fluid)then logic.PushFluid(data.raw.fluid[t.fluid]) end end}
 
 function logic.OnEntityScanned(ent) end -- hook
 function logic.ScanEntity(t)
@@ -467,7 +422,6 @@ function logic.debug(s)
 	for k,v in pairs(data.raw.recipe)do if(not hand.recipescan[k])then mis[k]=v end end
 	error("Logic Debug: " .. tostring(s) .. ":\nHAND:"..serpent.block(t) .. "\n----MISSING RECIPES----:\n"..serpent.block(mis))
 end
-
 
 function logic.InitScanResources() -- Push hand-minable autoplacements (trees, resources and rocks). Later scans should only check resources, trees cannot be automated.
 	for k,v in pairs(proto.GetRaw())do local p=v.proto local min=p.minable if(min and not min.required_fluid)then local rz=proto.Results(min) if(rz)then
@@ -505,13 +459,11 @@ function logic.Walk(fcond,fact,max_iter) local iter=0 max_iter=max_iter or 4000 
 	if(iter==max_iter)then logic.debug("Max Iterations: " .. iter .. " / " .. max_iter .. "\n") end
 end
 
-
 --[[ Hand Changed function ]]--
 -- Something in our hand has changed. This is called on every individual push.
 
 function logic.HandChanged()
 
 end
-
 
 return logic
